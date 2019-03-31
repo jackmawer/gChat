@@ -70,7 +70,7 @@ import java.util.regex.Pattern;
     authors = {"Luck", "md678685"},
     version = "VERSION", // filled in during build
     dependencies = {
-        @Dependency(id = "LuckPerms", optional = true)
+        @Dependency(id = "luckperms", optional = true)
     }
 )
 public class GChatPlugin implements GChatApi {
@@ -100,7 +100,7 @@ public class GChatPlugin implements GChatApi {
         placeholders.add(new StandardPlaceholders());
 
         // hook with luckperms
-        if (proxy.getPluginManager().getPlugin("LuckPerms").isPresent()) {
+        if (proxy.getPluginManager().getPlugin("luckperms").isPresent()) {
             placeholders.add(new LuckPermsHook());
         }
 
