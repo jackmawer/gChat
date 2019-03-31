@@ -4,19 +4,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>me.lucko</groupId>
-    <artifactId>gchat</artifactId>
-    <version>1.0.0</version>
-    <name>gChat</name>
+    <groupId>uk.co.n3fs.mc</groupId>
+    <artifactId>gchat-velocity</artifactId>
+    <version>1.0</version>
+    <name>gChat-Velocity</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+
+        <!--suppress UnresolvedMavenProperty -->
+        <full.version>${project.version}.${git.closest.tag.commit.count}</full.version>
     </properties>
 
     <build>
-        <finalName>${project.name}</finalName>
+        <finalName>${project.name}-${full.version}</finalName>
         <defaultGoal>clean package</defaultGoal>
         <resources>
             <resource>
@@ -35,6 +38,30 @@
             </resource>
         </resources>
         <plugins>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includes>
+                        <include>${basedir}/target/classes/velocity-plugin.json</include>
+                    </includes>
+                    <replacements>
+                        <replacement>
+                            <token>VERSION</token>
+                            <value>${full.version}</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -62,6 +89,29 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>2.2.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skipPoms>false</skipPoms>
+
+                    <runOnlyOnce>true</runOnlyOnce>
+                    <injectAllReactorProjects>true</injectAllReactorProjects>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+
+                    <gitDescribe>
+                        <tags>true</tags>
+                    </gitDescribe>
+                </configuration>
+        </plugin>
         </plugins>
     </build>
 
@@ -106,6 +156,5 @@
             <url>https://repo.spongepowered.org/maven</url>
         </repository>
     </repositories>
-
 
 </project>

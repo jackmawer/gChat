@@ -68,7 +68,7 @@ import java.util.regex.Pattern;
     id = "gchat-velocity",
     name = "gChat for Velocity",
     authors = {"Luck", "md678685"},
-    version = "${project.version}",
+    version = "VERSION", // filled in during build
     dependencies = {
         @Dependency(id = "LuckPerms", optional = true)
     }
