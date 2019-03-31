@@ -25,13 +25,13 @@
 
 package me.lucko.gchat.api;
 
+import com.velocitypowered.api.proxy.Player;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
 import net.kyori.text.event.ClickEvent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.config.Configuration;
+import ninja.leaping.configurate.ConfigurationNode;
 
 import static me.lucko.gchat.config.GChatConfig.getStringNonNull;
 
@@ -51,27 +51,27 @@ public class ChatFormat {
     private final ClickEvent.Action clickType;
     private final String clickValue;
 
-    public ChatFormat(String id, Configuration c) {
+    public ChatFormat(String id, ConfigurationNode c) {
         this.id = id;
-        this.priority = c.getInt("priority", 0);
-        this.checkPermission = c.getBoolean("check-permission", true);
+        this.priority = c.getNode("priority").getInt(0);
+        this.checkPermission = c.getNode("check-permission").getBoolean(true);
         this.formatText = getStringNonNull(c, "format");
 
         String hoverText = null;
         ClickEvent.Action clickType = null;
         String clickValue = null;
 
-        Configuration extra = c.getSection("format-extra");
-        if (extra != null) {
-            String hover = extra.getString("hover");
+        ConfigurationNode extra = c.getNode("format-extra");
+        if (!extra.isVirtual()) {
+            String hover = extra.getNode("hover").getString();
             if (hover != null && !hover.isEmpty()) {
                 hoverText = hover;
             }
 
-            Configuration click = extra.getSection("click");
-            if (click != null) {
-                String type = click.getString("type", "none").toLowerCase();
-                String value = click.getString("value");
+            ConfigurationNode click = extra.getNode("click");
+            if (!click.isVirtual()) {
+                String type = click.getNode("type").getString("none").toLowerCase();
+                String value = click.getNode("value").getString();
 
                 if (!type.equals("none") && value != null) {
                     if (!type.equals("suggest_command") && !type.equals("run_command") && !type.equals("open_url")) {
@@ -89,7 +89,7 @@ public class ChatFormat {
         this.clickValue = clickValue;
     }
 
-    public boolean canUse(ProxiedPlayer player) {
+    public boolean canUse(Player player) {
         return !checkPermission || player.hasPermission("gchat.format." + id);
     }
 

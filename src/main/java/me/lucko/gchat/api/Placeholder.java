@@ -25,7 +25,7 @@
 
 package me.lucko.gchat.api;
 
-import net.md_5.bungee.api.connection.ProxiedPlayer;
+import com.velocitypowered.api.proxy.Player;
 
 /**
  * Represents a placeholder replacement.
@@ -39,6 +39,6 @@ public interface Placeholder {
      * @param definition the placeholder definition, without the outer "{ }" brackets.
      * @return a replacement, or null if the definition cannot be satisfied by this {@link Placeholder}
      */
-    String getReplacement(ProxiedPlayer player, String definition);
+    String getReplacement(Player player, String definition);
 
 }

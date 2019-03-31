@@ -25,7 +25,7 @@
 
 package me.lucko.gchat.api;
 
-import net.md_5.bungee.api.connection.ProxiedPlayer;
+import com.velocitypowered.api.proxy.Player;
 
 import java.util.List;
 import java.util.Optional;
@@ -76,7 +76,7 @@ public interface GChatApi {
      * @param text the text containing the placeholders to be replaced
      * @return the replaced text
      */
-    String replacePlaceholders(ProxiedPlayer player, String text);
+    String replacePlaceholders(Player player, String text);
 
     /**
      * Gets the most applicable chat format for a given player
@@ -84,7 +84,7 @@ public interface GChatApi {
      * @param player the player
      * @return a chat format for the player, if any
      */
-    Optional<ChatFormat> getFormat(ProxiedPlayer player);
+    Optional<ChatFormat> getFormat(Player player);
 
     /**
      * Reloads the plugin from the config file

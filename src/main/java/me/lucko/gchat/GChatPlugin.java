@@ -25,6 +25,17 @@
 
 package me.lucko.gchat;
 
+import com.google.inject.Inject;
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+import com.velocitypowered.api.event.proxy.ProxyReloadEvent;
+import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
+import com.velocitypowered.api.plugin.Dependency;
+import com.velocitypowered.api.plugin.Plugin;
+import com.velocitypowered.api.plugin.PluginDescription;
+import com.velocitypowered.api.plugin.annotation.DataDirectory;
+import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ProxyServer;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -37,21 +48,15 @@ import me.lucko.gchat.config.GChatConfig;
 import me.lucko.gchat.hooks.LuckPermsHook;
 import me.lucko.gchat.placeholder.StandardPlaceholders;
 
-import net.kyori.text.Component;
-import net.kyori.text.serializer.ComponentSerializers;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.config.Configuration;
-import net.md_5.bungee.config.ConfigurationProvider;
-import net.md_5.bungee.config.YamlConfiguration;
+import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -59,25 +64,30 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class GChatPlugin extends Plugin implements GChatApi {
+@Plugin(
+    id = "gchat-velocity",
+    name = "gChat for Velocity",
+    authors = {"Luck", "md678685"},
+    version = "${project.version}",
+    dependencies = {
+        @Dependency(id = "LuckPerms", optional = true)
+    }
+)
+public class GChatPlugin implements GChatApi {
+    @Inject private ProxyServer proxy;
+    @Inject private Logger logger;
+    @Inject @DataDirectory private Path dataDirectory;
+
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([^\\{\\}]+)\\}");
-
-    public static BaseComponent[] convertText(String text) {
-        return TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', text));
-    }
-
-    public static BaseComponent[] convertText(Component component) {
-        return net.md_5.bungee.chat.ComponentSerializer.parse(ComponentSerializers.JSON.serialize(component));
-    }
 
     @Getter
     private GChatConfig config;
 
     private final Set<Placeholder> placeholders = ConcurrentHashMap.newKeySet();
 
-    @Override
-    public void onEnable() {
-        getLogger().info("Enabling gChat v" + getDescription().getVersion());
+    @Subscribe
+    public void onEnable(ProxyInitializeEvent event) {
+        logger.info("Enabling gChat v" + proxy.getPluginManager().getPlugin("gchat-velocity").get().getDescription().getVersion());
 
         // load configuration
         try {
@@ -90,22 +100,22 @@ public class GChatPlugin extends Plugin implements GChatApi {
         placeholders.add(new StandardPlaceholders());
 
         // hook with luckperms
-        if (getProxy().getPluginManager().getPlugin("LuckPerms") != null) {
+        if (proxy.getPluginManager().getPlugin("LuckPerms").isPresent()) {
             placeholders.add(new LuckPermsHook());
         }
 
         // register chat listener
-        getProxy().getPluginManager().registerListener(this, new GChatListener(this));
+        proxy.getEventManager().register(this, new GChatListener(this));
 
         // register command
-        getProxy().getPluginManager().registerCommand(this, new GChatCommand(this));
+        proxy.getCommandManager().register(new GChatCommand(this), "gchat", "globalchat");
 
         // init api singleton
         GChat.setApi(this);
     }
 
-    @Override
-    public void onDisable() {
+    @Subscribe
+    public void onDisable(ProxyShutdownEvent event) {
         // null the api singleton
         GChat.setApi(null);
     }
@@ -131,7 +141,7 @@ public class GChatPlugin extends Plugin implements GChatApi {
     }
 
     @Override
-    public String replacePlaceholders(ProxiedPlayer player, String text) {
+    public String replacePlaceholders(Player player, String text) {
         if (text == null || text.isEmpty() || placeholders.isEmpty()) {
             return text;
         }
@@ -157,13 +167,17 @@ public class GChatPlugin extends Plugin implements GChatApi {
     }
 
     @Override
-    public Optional<ChatFormat> getFormat(ProxiedPlayer player) {
+    public Optional<ChatFormat> getFormat(Player player) {
         return config.getFormats().stream()
                 .filter(f -> f.canUse(player))
                 .findFirst();
     }
 
-    @Override
+    @Subscribe
+    public boolean onReload(ProxyReloadEvent event) {
+        return reloadConfig();
+    }
+
     public boolean reloadConfig() {
         try {
             config = loadConfig();
@@ -175,16 +189,19 @@ public class GChatPlugin extends Plugin implements GChatApi {
     }
 
     private GChatConfig loadConfig() throws Exception {
-        Configuration configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(getBundledFile("config.yml"));
-        return new GChatConfig(configuration);
+        ConfigurationNode config = YAMLConfigurationLoader.builder()
+            .setFile(getBundledFile("config.yml"))
+            .build()
+            .load();
+        return new GChatConfig(config);
     }
 
     private File getBundledFile(String name) {
-        File file = new File(getDataFolder(), name);
+        File file = new File(dataDirectory.toFile(), name);
 
         if (!file.exists()) {
-            getDataFolder().mkdir();
-            try (InputStream in = getResourceAsStream(name)) {
+            dataDirectory.toFile().mkdir();
+            try (InputStream in = getClass().getResourceAsStream(name)) {
                 Files.copy(in, file.toPath());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -192,5 +209,13 @@ public class GChatPlugin extends Plugin implements GChatApi {
         }
 
         return file;
+    }
+
+    ProxyServer getProxy() {
+        return proxy;
+    }
+
+    PluginDescription getDescription() {
+        return proxy.getPluginManager().getPlugin("gchat-velocity").get().getDescription();
     }
 }

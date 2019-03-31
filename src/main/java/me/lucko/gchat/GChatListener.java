@@ -25,6 +25,10 @@
 
 package me.lucko.gchat;
 
+import com.velocitypowered.api.event.PostOrder;
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.player.PlayerChatEvent;
+import com.velocitypowered.api.proxy.Player;
 import lombok.RequiredArgsConstructor;
 
 import me.lucko.gchat.api.ChatFormat;
@@ -32,35 +36,27 @@ import me.lucko.gchat.api.events.GChatEvent;
 import me.lucko.gchat.api.events.GChatMessageFormedEvent;
 import me.lucko.gchat.api.events.GChatMessageSendEvent;
 
+import net.kyori.text.Component;
 import net.kyori.text.TextComponent;
 import net.kyori.text.event.ClickEvent;
 import net.kyori.text.event.HoverEvent;
 import net.kyori.text.serializer.ComponentSerializers;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.event.ChatEvent;
-import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.event.EventHandler;
-import net.md_5.bungee.event.EventPriority;
 
 import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
-public class GChatListener implements Listener {
+public class GChatListener {
     private static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)(" + String.valueOf('§') + "|&)[0-9A-FK-OR]");
     private final GChatPlugin plugin;
 
-    @EventHandler(priority = EventPriority.NORMAL)
-    public void onChat(ChatEvent e) {
-        if (e.isCommand()) return;
-        if (!(e.getSender() instanceof ProxiedPlayer)) return;
-
-        ProxiedPlayer player = ((ProxiedPlayer) e.getSender());
+    @Subscribe(order = PostOrder.NORMAL)
+    public void onChat(PlayerChatEvent e) {
+        Player player = e.getPlayer();
 
         GChatEvent gChatEvent = new GChatEvent(player, e);
-        plugin.getProxy().getPluginManager().callEvent(gChatEvent);
+        plugin.getProxy().getEventManager().fire(gChatEvent).join();
 
-        if (gChatEvent.isCancelled()) {
+        if (!gChatEvent.getResult().isAllowed()) {
             return;
         }
 
@@ -75,9 +71,9 @@ public class GChatListener implements Listener {
             }
 
             // they don't have permission, and the message shouldn't be passed to the backend.
-            e.setCancelled(true);
+            e.setResult(PlayerChatEvent.ChatResult.denied());
 
-            BaseComponent[] failMessage = plugin.getConfig().getRequireSendPermissionFailMessage();
+            Component failMessage = plugin.getConfig().getRequireSendPermissionFailMessage();
             if (failMessage != null) {
                 player.sendMessage(failMessage);
             }
@@ -90,14 +86,14 @@ public class GChatListener implements Listener {
         // couldn't find a format for the player
         if (format == null) {
             if (!plugin.getConfig().isPassthrough()) {
-                e.setCancelled(true);
+                e.setResult(PlayerChatEvent.ChatResult.denied());
             }
 
             return;
         }
 
         // we have a format, so cancel the event.
-        e.setCancelled(true);
+        e.setResult(PlayerChatEvent.ChatResult.denied());
 
         // get the actual message format, and apply replacements.
         String formatText = format.getFormatText();
@@ -140,22 +136,19 @@ public class GChatListener implements Listener {
                 .build();
 
         GChatMessageFormedEvent formedEvent = new GChatMessageFormedEvent(player, format, playerMessage, message);
-        plugin.getProxy().getPluginManager().callEvent(formedEvent);
-
-        // convert to bungee format
-        BaseComponent[] bungeeComponent = GChatPlugin.convertText(message);
+        plugin.getProxy().getEventManager().fireAndForget(formedEvent);
 
         // send the message to online players
-        for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
+        for (Player p : plugin.getProxy().getAllPlayers()) {
             boolean cancelled = plugin.getConfig().isRequireReceivePermission() && !player.hasPermission("gchat.receive");
             GChatMessageSendEvent sendEvent = new GChatMessageSendEvent(player, p, format, playerMessage, cancelled);
-            plugin.getProxy().getPluginManager().callEvent(sendEvent);
+            plugin.getProxy().getEventManager().fire(sendEvent).join();
 
-            if (sendEvent.isCancelled()) {
+            if (!sendEvent.getResult().isAllowed()) {
                 continue;
             }
 
-            p.sendMessage(bungeeComponent);
+            p.sendMessage(message);
         }
     }
 

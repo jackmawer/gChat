@@ -25,6 +25,9 @@
 
 package me.lucko.gchat.api.events;
 
+import com.velocitypowered.api.event.ResultedEvent;
+import com.velocitypowered.api.event.player.PlayerChatEvent;
+import com.velocitypowered.api.proxy.Player;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -33,24 +36,27 @@ import lombok.ToString;
 
 import me.lucko.gchat.api.ChatFormat;
 
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.plugin.Cancellable;
-import net.md_5.bungee.api.plugin.Event;
-
 /**
  * Called when an individual message is about to be sent to a recipient.
  */
 @Getter
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @ToString
-public class GChatMessageSendEvent extends Event implements Cancellable {
+public class GChatMessageSendEvent implements ResultedEvent<PlayerChatEvent.ChatResult> {
 
-    private final ProxiedPlayer sender;
-    private final ProxiedPlayer recipient;
+    private final Player sender;
+    private final Player recipient;
     private final ChatFormat format;
     private final String rawMessage;
 
     @Setter
-    private boolean cancelled;
+    private PlayerChatEvent.ChatResult result;
+
+    public GChatMessageSendEvent(Player sender, Player recipient, ChatFormat format, String rawMessage, boolean cancelled) {
+        this.sender = sender;
+        this.recipient = recipient;
+        this.format = format;
+        this.rawMessage = rawMessage;
+        this.result = cancelled ? PlayerChatEvent.ChatResult.denied() : PlayerChatEvent.ChatResult.allowed();
+    }
 }

@@ -25,18 +25,13 @@
 
 package me.lucko.gchat.api.events;
 
+import com.velocitypowered.api.proxy.Player;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
-
 import me.lucko.gchat.api.ChatFormat;
-
 import net.kyori.text.Component;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.plugin.Event;
 
 /**
  * Called when a chat message has been fully formed and is about to be sent to recipients.
@@ -45,9 +40,9 @@ import net.md_5.bungee.api.plugin.Event;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @ToString
-public class GChatMessageFormedEvent extends Event {
+public class GChatMessageFormedEvent {
 
-    private final ProxiedPlayer sender;
+    private final Player sender;
     private final ChatFormat format;
     private final String rawMessage;
     private final Component message;

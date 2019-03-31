@@ -30,11 +30,11 @@ import lombok.ToString;
 
 import com.google.common.collect.ImmutableList;
 
-import me.lucko.gchat.GChatPlugin;
 import me.lucko.gchat.api.ChatFormat;
 
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.config.Configuration;
+import net.kyori.text.Component;
+import net.kyori.text.serializer.ComponentSerializers;
+import ninja.leaping.configurate.ConfigurationNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,8 +44,8 @@ import java.util.Map;
 @Getter
 @ToString
 public class GChatConfig {
-    public static String getStringNonNull(Configuration configuration, String path) throws IllegalArgumentException {
-        String ret = configuration.getString(path);
+    public static String getStringNonNull(ConfigurationNode configuration, String path) throws IllegalArgumentException {
+        String ret = configuration.getNode(path).getString();
         if (ret == null) {
             throw new IllegalArgumentException("Missing string value at '" + path + "'");
         }
@@ -56,45 +56,47 @@ public class GChatConfig {
     private final boolean passthrough;
 
     private final boolean requireSendPermission;
-    private final BaseComponent[] requireSendPermissionFailMessage;
+    private final Component requireSendPermissionFailMessage;
     private final boolean requireReceivePermission;
     private final boolean requirePermissionPassthrough;
 
     private final List<ChatFormat> formats;
 
-    public GChatConfig(Configuration c) {
-        this.passthrough = c.getBoolean("passthrough", true);
+    public GChatConfig(ConfigurationNode c) {
+        this.passthrough = c.getNode("passthrough").getBoolean(true);
 
-        Configuration requirePermission = c.getSection("require-permission");
-        if (requirePermission == null) {
+        ConfigurationNode requirePermission = c.getNode("require-permission");
+        if (requirePermission.isVirtual()) {
             throw new IllegalArgumentException("Missing section: require-permission");
         }
 
-        this.requireSendPermission = requirePermission.getBoolean("send", false);
+        this.requireSendPermission = requirePermission.getNode("send").getBoolean(false);
 
         String failMsg = getStringNonNull(requirePermission, "send-fail");
         if (failMsg.isEmpty()) {
             requireSendPermissionFailMessage = null;
         } else {
-            requireSendPermissionFailMessage = GChatPlugin.convertText(failMsg);
+            requireSendPermissionFailMessage = ComponentSerializers.LEGACY.deserialize(failMsg,'&');
         }
 
-        this.requireReceivePermission = requirePermission.getBoolean("receive", false);
-        this.requirePermissionPassthrough = requirePermission.getBoolean("passthrough", true);
+        this.requireReceivePermission = requirePermission.getNode("receive").getBoolean(false);
+        this.requirePermissionPassthrough = requirePermission.getNode("passthrough").getBoolean(true);
 
-        Configuration formatsSection = c.getSection("formats");
-        if (formatsSection == null) {
+        ConfigurationNode formatsSection = c.getNode("formats");
+        if (formatsSection.isVirtual()) {
             throw new IllegalArgumentException("Missing section: formats");
         }
 
         Map<String, ChatFormat> formats = new HashMap<>();
-        for (String id : formatsSection.getKeys()) {
-            Configuration formatSection = formatsSection.getSection(id);
-            if (formatSection == null) {
+        for (Object id : formatsSection.getChildrenMap().keySet()) {
+            ConfigurationNode formatSection = formatsSection.getNode(id);
+            if (formatSection.isVirtual() || !(id instanceof String)) {
                 continue;
             }
 
-            formats.put(id.toLowerCase(), new ChatFormat(id.toLowerCase(), formatSection));
+            String key = (String) id;
+
+            formats.put(key.toLowerCase(), new ChatFormat(key.toLowerCase(), formatSection));
         }
 
         List<ChatFormat> formatsList = new ArrayList<>(formats.values());

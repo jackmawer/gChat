@@ -25,14 +25,13 @@
 
 package me.lucko.gchat.placeholder;
 
+import com.velocitypowered.api.proxy.Player;
 import me.lucko.gchat.api.Placeholder;
-
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 public class StandardPlaceholders implements Placeholder {
 
     @Override
-    public String getReplacement(ProxiedPlayer player, String definition) {
+    public String getReplacement(Player player, String definition) {
 
         // dynamic placeholders
         if (definition.startsWith("has_perm_") && definition.length() > "has_perm_".length()) {
@@ -44,14 +43,13 @@ public class StandardPlaceholders implements Placeholder {
         switch (definition.toLowerCase()) {
             case "username":
             case "name":
-                return player.getName();
+            case "display_username": // Velocity doesn't have display names
+            case "display_name":
+                return player.getUsername();
             case "server_name":
-                return player.getServer().getInfo().getName();
+                return player.getCurrentServer().get().getServerInfo().getName();
             case "uuid":
                 return player.getUniqueId().toString();
-            case "display_username":
-            case "display_name":
-                return player.getDisplayName();
             default:
                 return null;
         }

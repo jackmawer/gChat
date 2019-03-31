@@ -29,6 +29,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+import com.velocitypowered.api.proxy.Player;
 import me.lucko.gchat.api.Placeholder;
 import me.lucko.luckperms.LuckPerms;
 import me.lucko.luckperms.api.Contexts;
@@ -39,8 +40,6 @@ import me.lucko.luckperms.api.Track;
 import me.lucko.luckperms.api.User;
 import me.lucko.luckperms.api.caching.PermissionData;
 import me.lucko.luckperms.api.caching.UserData;
-
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 import java.util.List;
 import java.util.Objects;
@@ -69,7 +68,7 @@ public class LuckPermsHook implements Placeholder {
     }
 
     @Override
-    public String getReplacement(ProxiedPlayer player, String identifier) {
+    public String getReplacement(Player player, String identifier) {
         if (identifier.startsWith("lp_")) {
             identifier = identifier.substring("lp_".length());
         } else if (identifier.startsWith("luckperms_")) {

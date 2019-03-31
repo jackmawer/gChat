@@ -25,15 +25,13 @@
 
 package me.lucko.gchat.api.events;
 
+import com.velocitypowered.api.event.ResultedEvent;
+import com.velocitypowered.api.event.player.PlayerChatEvent;
+import com.velocitypowered.api.proxy.Player;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.event.ChatEvent;
-import net.md_5.bungee.api.plugin.Cancellable;
-import net.md_5.bungee.api.plugin.Event;
 
 /**
  * Called just before gChat is going to handle a chat event from a player.
@@ -41,17 +39,17 @@ import net.md_5.bungee.api.plugin.Event;
 @Getter
 @EqualsAndHashCode(callSuper = false)
 @ToString
-public class GChatEvent extends Event implements Cancellable {
+public class GChatEvent implements ResultedEvent<PlayerChatEvent.ChatResult> {
 
-    private final ProxiedPlayer sender;
-    private final ChatEvent chatEvent;
+    private final Player sender;
+    private final PlayerChatEvent chatEvent;
 
     @Setter
-    private boolean cancelled;
+    private PlayerChatEvent.ChatResult result;
 
-    public GChatEvent(ProxiedPlayer sender, ChatEvent chatEvent) {
+    public GChatEvent(Player sender, PlayerChatEvent chatEvent) {
         this.sender = sender;
         this.chatEvent = chatEvent;
-        this.cancelled = chatEvent.isCancelled();
+        this.result = chatEvent.getResult();
     }
 }
