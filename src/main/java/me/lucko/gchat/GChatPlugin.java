@@ -201,7 +201,7 @@ public class GChatPlugin implements GChatApi {
 
         if (!file.exists()) {
             dataDirectory.toFile().mkdir();
-            try (InputStream in = getClass().getResourceAsStream(name)) {
+            try (InputStream in = GChatPlugin.class.getResourceAsStream("/" + name)) {
                 Files.copy(in, file.toPath());
             } catch (IOException e) {
                 e.printStackTrace();
