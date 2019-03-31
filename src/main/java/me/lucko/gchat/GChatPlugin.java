@@ -87,7 +87,7 @@ public class GChatPlugin implements GChatApi {
 
     @Subscribe
     public void onEnable(ProxyInitializeEvent event) {
-        logger.info("Enabling gChat v" + proxy.getPluginManager().getPlugin("gchat-velocity").get().getDescription().getVersion());
+        logger.info("Enabling gChat v" + getDescription().getVersion().get());
 
         // load configuration
         try {

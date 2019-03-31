@@ -48,8 +48,8 @@ public class GChatCommand implements Command {
     @Override
     public void execute(CommandSource source, String[] args) {
         if (args.length == 0) {
-            TextComponent versionMsg = PREFIX.append(TextComponent.of("Running gChat ").color(TextColor.RED).decoration(TextDecoration.BOLD, false))
-                .append(TextComponent.of("v" + plugin.getDescription().getVersion()).color(TextColor.WHITE).decoration(TextDecoration.BOLD, false))
+            TextComponent versionMsg = PREFIX.append(TextComponent.of("Running gChat for Velocity ").color(TextColor.RED).decoration(TextDecoration.BOLD, false))
+                .append(TextComponent.of("v" + plugin.getDescription().getVersion().get()).color(TextColor.WHITE).decoration(TextDecoration.BOLD, false))
                 .append(TextComponent.of(".").color(TextColor.RED).decoration(TextDecoration.BOLD, false));
 
             source.sendMessage(versionMsg);
