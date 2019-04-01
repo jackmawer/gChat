@@ -40,7 +40,10 @@ jobs:
       # run tests!
       - run: mvn integration-test
 
+      # copy to destination
+      - run: cp target/gChat-Velocity-*.jar target/final-plugin.jar
+
       # store artifact
       - store_artifacts:
-          path: target/gChat*.jar
+          path: target/final-plugin.jar
           destination: gChat-Velocity.jar
