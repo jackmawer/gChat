@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableList;
 import me.lucko.gchat.api.ChatFormat;
 
 import net.kyori.text.Component;
-import net.kyori.text.serializer.ComponentSerializers;
+import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
 import ninja.leaping.configurate.ConfigurationNode;
 
 import java.util.ArrayList;
@@ -76,7 +76,7 @@ public class GChatConfig {
         if (failMsg.isEmpty()) {
             requireSendPermissionFailMessage = null;
         } else {
-            requireSendPermissionFailMessage = ComponentSerializers.LEGACY.deserialize(failMsg,'&');
+            requireSendPermissionFailMessage = LegacyComponentSerializer.INSTANCE.deserialize(failMsg,'&');
         }
 
         this.requireReceivePermission = requirePermission.getNode("receive").getBoolean(false);

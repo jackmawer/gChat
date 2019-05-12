@@ -40,7 +40,7 @@ import net.kyori.text.Component;
 import net.kyori.text.TextComponent;
 import net.kyori.text.event.ClickEvent;
 import net.kyori.text.event.HoverEvent;
-import net.kyori.text.serializer.ComponentSerializers;
+import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.regex.Pattern;
 
@@ -120,11 +120,11 @@ public class GChatListener {
         formatText = formatText.replace("{message}", playerMessage);
 
         // apply any hover events
-        HoverEvent hoverEvent = hover == null ? null : new HoverEvent(HoverEvent.Action.SHOW_TEXT, ComponentSerializers.LEGACY.deserialize(hover, '&'));
-        ClickEvent clickEvent = clickType == null ? null : new ClickEvent(clickType, clickValue);
+        HoverEvent hoverEvent = hover == null ? null : HoverEvent.of(HoverEvent.Action.SHOW_TEXT, LegacyComponentSerializer.INSTANCE.deserialize(hover, '&'));
+        ClickEvent clickEvent = clickType == null ? null : ClickEvent.of(clickType, clickValue);
 
         // convert the format to a message
-        TextComponent message = ComponentSerializers.LEGACY.deserialize(formatText, '&').toBuilder()
+        TextComponent message = LegacyComponentSerializer.INSTANCE.deserialize(formatText, '&').toBuilder()
                 .applyDeep(m -> {
                     if (hoverEvent != null) {
                         m.hoverEvent(hoverEvent);
