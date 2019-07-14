@@ -76,7 +76,7 @@ public class GChatConfig {
         if (failMsg.isEmpty()) {
             requireSendPermissionFailMessage = null;
         } else {
-            requireSendPermissionFailMessage = LegacyComponentSerializer.INSTANCE.deserialize(failMsg,'&');
+            requireSendPermissionFailMessage = LegacyComponentSerializer.legacyLinking().deserialize(failMsg, '&');
         }
 
         this.requireReceivePermission = requirePermission.getNode("receive").getBoolean(false);

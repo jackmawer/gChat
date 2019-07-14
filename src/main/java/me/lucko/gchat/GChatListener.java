@@ -120,11 +120,11 @@ public class GChatListener {
         formatText = formatText.replace("{message}", playerMessage);
 
         // apply any hover events
-        HoverEvent hoverEvent = hover == null ? null : HoverEvent.of(HoverEvent.Action.SHOW_TEXT, LegacyComponentSerializer.INSTANCE.deserialize(hover, '&'));
+        HoverEvent hoverEvent = hover == null ? null : HoverEvent.of(HoverEvent.Action.SHOW_TEXT, LegacyComponentSerializer.legacy().deserialize(hover, '&'));
         ClickEvent clickEvent = clickType == null ? null : ClickEvent.of(clickType, clickValue);
 
         // convert the format to a message
-        TextComponent message = LegacyComponentSerializer.INSTANCE.deserialize(formatText, '&').toBuilder()
+        TextComponent message = LegacyComponentSerializer.legacyLinking().deserialize(formatText, '&').toBuilder()
                 .applyDeep(m -> {
                     if (hoverEvent != null) {
                         m.hoverEvent(hoverEvent);
