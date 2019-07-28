@@ -45,10 +45,15 @@ import me.lucko.gchat.api.ChatFormat;
 import me.lucko.gchat.api.GChatApi;
 import me.lucko.gchat.api.Placeholder;
 import me.lucko.gchat.config.GChatConfig;
+import me.lucko.gchat.config.TypeTokens;
+import me.lucko.gchat.config.serializers.*;
 import me.lucko.gchat.hooks.LuckPermsHook;
 import me.lucko.gchat.placeholder.StandardPlaceholders;
 
 import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.ConfigurationOptions;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
 import org.slf4j.Logger;
 
@@ -189,7 +194,18 @@ public class GChatPlugin implements GChatApi {
     }
 
     private GChatConfig loadConfig() throws Exception {
+        ConfigurationOptions options = ConfigurationOptions.defaults()
+            .setSerializers(
+                TypeSerializers.newCollection()
+                    .registerType(TypeTokens.COMPONENT, new ComponentSerializer())
+                    .registerType(TypeTokens.STYLE, new StyleSerializer())
+                    .registerType(TypeTokens.CLICK_EVENT, new ClickEventSerializer())
+                    .registerType(TypeTokens.HOVER_EVENT, new HoverEventSerializer())
+                    .registerType(TypeTokens.POS, new PosSerializer())
+            );
+
         ConfigurationNode config = YAMLConfigurationLoader.builder()
+            .setDefaultOptions(options)
             .setFile(getBundledFile("config.yml"))
             .build()
             .load();

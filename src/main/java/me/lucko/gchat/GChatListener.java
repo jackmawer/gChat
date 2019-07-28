@@ -40,6 +40,7 @@ import net.kyori.text.Component;
 import net.kyori.text.TextComponent;
 import net.kyori.text.event.ClickEvent;
 import net.kyori.text.event.HoverEvent;
+import net.kyori.text.format.Style;
 import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.regex.Pattern;
@@ -124,12 +125,16 @@ public class GChatListener {
         ClickEvent clickEvent = clickType == null ? null : ClickEvent.of(clickType, clickValue);
 
         // convert the format to a message
-        TextComponent message = LegacyComponentSerializer.legacyLinking().deserialize(formatText, '&').toBuilder()
+        TextComponent message = LegacyComponentSerializer.legacyLinking(plugin.getConfig().getLinkStyle())
+            .deserialize(formatText, '&')
+            .toBuilder()
                 .applyDeep(m -> {
-                    if (hoverEvent != null) {
+                    Component mComponent = m.build();
+
+                    if (hoverEvent != null && mComponent.hoverEvent() == null) {
                         m.hoverEvent(hoverEvent);
                     }
-                    if (clickEvent != null) {
+                    if (clickEvent != null && mComponent.clickEvent() == null) {
                         m.clickEvent(clickEvent);
                     }
                 })
