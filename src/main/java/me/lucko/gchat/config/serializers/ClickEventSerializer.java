@@ -14,10 +14,21 @@ public class ClickEventSerializer implements TypeSerializer<ClickEvent> {
     @Nullable
     @Override
     public ClickEvent deserialize(@NonNull TypeToken<?> type, @NonNull ConfigurationNode value) throws ObjectMappingException {
-        final ClickEvent.Action action = value.getNode("action").getValue(CLICK_ACTION);
+        final String actionString = value.getNode("action").getString(value.getNode("type").getString());
+        if (actionString == null) {
+            throw new ObjectMappingException("Click event action not specified");
+        }
+
+        ClickEvent.Action action;
+        try {
+            action = ClickEvent.Action.valueOf(actionString.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ObjectMappingException("Invalid click event action", e);
+        }
+
         final String eventValue = value.getNode("value").getString();
 
-        if (action == null || eventValue == null) throw new ObjectMappingException("Invalid click event");
+        if (eventValue == null) throw new ObjectMappingException("No click event value specified");
         return ClickEvent.of(action, eventValue);
     }
 

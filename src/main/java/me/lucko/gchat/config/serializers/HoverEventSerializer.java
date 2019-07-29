@@ -3,7 +3,9 @@ package me.lucko.gchat.config.serializers;
 import com.google.common.reflect.TypeToken;
 import me.lucko.gchat.config.TypeTokens;
 import net.kyori.text.Component;
+import net.kyori.text.event.ClickEvent;
 import net.kyori.text.event.HoverEvent;
+import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
@@ -15,10 +17,25 @@ public class HoverEventSerializer implements TypeSerializer<HoverEvent> {
     @Nullable
     @Override
     public HoverEvent deserialize(@NonNull TypeToken<?> type, @NonNull ConfigurationNode value) throws ObjectMappingException {
-        final HoverEvent.Action action = value.getNode("action").getValue(TypeTokens.HOVER_ACTION);
-        final Component eventValue = value.getNode("value").getValue(TypeTokens.COMPONENT);
+        final String actionString = value.getNode("action").getString(value.getNode("type").getString());
+        if (actionString == null) {
+            throw new ObjectMappingException("Hover event action not specified");
+        }
 
-        if (action == null || eventValue == null) throw new ObjectMappingException("Invalid hover event");
+        HoverEvent.Action action;
+        try {
+            action = HoverEvent.Action.valueOf(actionString.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ObjectMappingException("Invalid hover event action", e);
+        }
+
+        Component eventValue = value.getNode("value").getValue(TypeTokens.COMPONENT);
+
+        if (eventValue == null && !value.getNode("text").isVirtual()) {
+            eventValue = LegacyComponentSerializer.legacy().deserialize(value.getNode("text").getString(""));
+        }
+
+        if (eventValue == null) throw new ObjectMappingException("No hover component specified");
         return HoverEvent.of(action, eventValue);
     }
 
