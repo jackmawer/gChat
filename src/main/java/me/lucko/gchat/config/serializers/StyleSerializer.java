@@ -1,7 +1,6 @@
 package me.lucko.gchat.config.serializers;
 
 import com.google.common.reflect.TypeToken;
-import com.sun.istack.internal.NotNull;
 import net.kyori.text.event.ClickEvent;
 import net.kyori.text.event.HoverEvent;
 import net.kyori.text.format.Style;
@@ -14,7 +13,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class StyleSerializer implements TypeSerializer<Style> {
-    @NotNull
+    @NonNull
     @Override
     public Style deserialize(@NonNull TypeToken<?> type, @NonNull ConfigurationNode value) throws ObjectMappingException {
         return Style.builder()
