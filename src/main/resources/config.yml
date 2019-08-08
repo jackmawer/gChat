@@ -65,3 +65,12 @@ formats:
       click:
         type: suggest_command
         value: "/msg {name} "
+
+# The style for links pasted in chat; you can use any JSON formatting, including hover events
+link-style:
+  underline: true
+  hoverEvent:
+    action: show_text
+    value:
+      text: "Click here to visit URL."
+      color: aqua

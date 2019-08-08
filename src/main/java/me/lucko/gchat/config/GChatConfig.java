@@ -33,8 +33,12 @@ import com.google.common.collect.ImmutableList;
 import me.lucko.gchat.api.ChatFormat;
 
 import net.kyori.text.Component;
+import net.kyori.text.format.Style;
+import net.kyori.text.format.TextColor;
+import net.kyori.text.format.TextDecoration;
 import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
 import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,6 +65,8 @@ public class GChatConfig {
     private final boolean requirePermissionPassthrough;
 
     private final List<ChatFormat> formats;
+
+    private final Style linkStyle;
 
     public GChatConfig(ConfigurationNode c) {
         this.passthrough = c.getNode("passthrough").getBoolean(true);
@@ -106,6 +112,15 @@ public class GChatConfig {
         });
 
         this.formats = ImmutableList.copyOf(formatsList);
+
+        Style _linkStyle;
+        try {
+            _linkStyle = c.getNode("link-style").getValue(TypeTokens.STYLE);
+        } catch (ObjectMappingException e) {
+            _linkStyle = Style.of(TextColor.WHITE, TextDecoration.UNDERLINED);
+        }
+
+        this.linkStyle = _linkStyle;
     }
 
 }
