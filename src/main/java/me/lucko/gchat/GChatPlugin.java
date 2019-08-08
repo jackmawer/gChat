@@ -41,6 +41,7 @@ import lombok.NonNull;
 
 import com.google.common.collect.ImmutableSet;
 
+import me.crypnotic.neutron.api.Neutron;
 import me.lucko.gchat.api.ChatFormat;
 import me.lucko.gchat.api.GChatApi;
 import me.lucko.gchat.api.Placeholder;
@@ -48,6 +49,7 @@ import me.lucko.gchat.config.GChatConfig;
 import me.lucko.gchat.config.TypeTokens;
 import me.lucko.gchat.config.serializers.*;
 import me.lucko.gchat.hooks.LuckPermsHook;
+import me.lucko.gchat.hooks.NeutronN3FSHook;
 import me.lucko.gchat.placeholder.StandardPlaceholders;
 
 import ninja.leaping.configurate.ConfigurationNode;
@@ -107,6 +109,10 @@ public class GChatPlugin implements GChatApi {
         // hook with luckperms
         if (proxy.getPluginManager().getPlugin("luckperms").isPresent()) {
             placeholders.add(new LuckPermsHook());
+        }
+
+        if (proxy.getPluginManager().getPlugin("neutron-n3fs").isPresent()) {
+            proxy.getEventManager().register(this, new NeutronN3FSHook());
         }
 
         // register chat listener
