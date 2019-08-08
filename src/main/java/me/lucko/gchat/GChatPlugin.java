@@ -41,7 +41,6 @@ import lombok.NonNull;
 
 import com.google.common.collect.ImmutableSet;
 
-import me.crypnotic.neutron.api.Neutron;
 import me.lucko.gchat.api.ChatFormat;
 import me.lucko.gchat.api.GChatApi;
 import me.lucko.gchat.api.Placeholder;
@@ -54,7 +53,6 @@ import me.lucko.gchat.placeholder.StandardPlaceholders;
 
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.ConfigurationOptions;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
 import org.slf4j.Logger;
@@ -77,7 +75,8 @@ import java.util.regex.Pattern;
     authors = {"Luck", "md678685"},
     version = "VERSION", // filled in during build
     dependencies = {
-        @Dependency(id = "luckperms", optional = true)
+        @Dependency(id = "luckperms", optional = true),
+        @Dependency(id = "neutron-n3fs", optional = true)
     }
 )
 public class GChatPlugin implements GChatApi {
