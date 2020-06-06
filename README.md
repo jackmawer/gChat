@@ -1,5 +1,5 @@
 # gChat [![Build Status](https://ci.ender.zone/job/gChat-Velocity/badge/icon)](https://ci.ender.zone/job/gChat-Velocity)
-A simple global chat plugin for BungeeCord.
+A simple global chat plugin for Velocity, based on [lucko/gChat](https://github.com/lucko/gChat).
 
 * **Downloads** - <https://ci.ender.zone/job/gChat-Velocity>
 
