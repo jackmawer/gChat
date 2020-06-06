@@ -1,7 +1,7 @@
-# gChat [![Build Status](https://ci.lucko.me/job/gChat/badge/icon)](https://ci.lucko.me/job/gChat/)
+# gChat [![Build Status](https://ci.ender.zone/job/gChat-Velocity/badge/icon)](https://ci.ender.zone/job/gChat-Velocity)
 A simple global chat plugin for BungeeCord.
 
-* **Downloads** - <https://ci.lucko.me/job/gChat/>
+* **Downloads** - <https://ci.ender.zone/job/gChat-Velocity>
 
 ### Features
 * Global chat channel throughout your network
