@@ -31,7 +31,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import me.lucko.gchat.api.ChatFormat;
-import net.kyori.text.Component;
+import net.kyori.adventure.text.Component;
 
 /**
  * Called when a chat message has been fully formed and is about to be sent to recipients.

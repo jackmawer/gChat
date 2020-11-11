@@ -30,7 +30,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
-import net.kyori.text.event.ClickEvent;
+import net.kyori.adventure.text.event.ClickEvent;
 import ninja.leaping.configurate.ConfigurationNode;
 
 import static me.lucko.gchat.config.GChatConfig.getStringNonNull;

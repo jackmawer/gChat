@@ -29,26 +29,32 @@ import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.PlayerChatEvent;
 import com.velocitypowered.api.proxy.Player;
-import lombok.RequiredArgsConstructor;
-
 import me.lucko.gchat.api.ChatFormat;
 import me.lucko.gchat.api.events.GChatEvent;
 import me.lucko.gchat.api.events.GChatMessageFormedEvent;
 import me.lucko.gchat.api.events.GChatMessageSendEvent;
-
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.event.ClickEvent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.Style;
-import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.regex.Pattern;
 
-@RequiredArgsConstructor
 public class GChatListener {
     private static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)(" + String.valueOf('§') + "|&)[0-9A-FK-OR]");
+
     private final GChatPlugin plugin;
+    private final LegacyComponentSerializer legacyLinkingSerializer;
+
+    public GChatListener(GChatPlugin plugin) {
+        this.plugin = plugin;
+        this.legacyLinkingSerializer = LegacyComponentSerializer.builder()
+                .character('&')
+                .extractUrls(plugin.getConfig().getLinkStyle())
+                .build();
+
+    }
 
     @Subscribe(order = PostOrder.NORMAL)
     public void onChat(PlayerChatEvent e) {
@@ -121,12 +127,12 @@ public class GChatListener {
         formatText = formatText.replace("{message}", playerMessage);
 
         // apply any hover events
-        HoverEvent hoverEvent = hover == null ? null : HoverEvent.of(HoverEvent.Action.SHOW_TEXT, LegacyComponentSerializer.legacy().deserialize(hover, '&'));
-        ClickEvent clickEvent = clickType == null ? null : ClickEvent.of(clickType, clickValue);
+        HoverEvent hoverEvent = hover == null ? null : HoverEvent.showText(LegacyComponentSerializer.legacyAmpersand().deserialize(hover));
+        ClickEvent clickEvent = clickType == null ? null : ClickEvent.clickEvent(clickType, clickValue);
 
         // convert the format to a message
-        TextComponent message = LegacyComponentSerializer.legacyLinking(plugin.getConfig().getLinkStyle())
-            .deserialize(formatText, '&')
+        TextComponent message = legacyLinkingSerializer
+            .deserialize(formatText)
             .toBuilder()
                 .applyDeep(m -> {
                     Component mComponent = m.build();

@@ -45,15 +45,15 @@ import me.lucko.gchat.api.ChatFormat;
 import me.lucko.gchat.api.GChatApi;
 import me.lucko.gchat.api.Placeholder;
 import me.lucko.gchat.config.GChatConfig;
-import me.lucko.gchat.config.TypeTokens;
-import me.lucko.gchat.config.serializers.*;
 import me.lucko.gchat.hooks.LuckPermsHook;
 import me.lucko.gchat.hooks.NeutronN3FSHook;
 import me.lucko.gchat.placeholder.StandardPlaceholders;
 
+import net.kyori.adventure.serializer.configurate3.ConfigurateComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.ConfigurationOptions;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
 import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
 import org.slf4j.Logger;
 
@@ -84,6 +84,10 @@ public class GChatPlugin implements GChatApi {
     @Inject private Logger logger;
     @Inject @DataDirectory private Path dataDirectory;
 
+    public static final LegacyComponentSerializer LEGACY_LINKING_SERIALIZER = LegacyComponentSerializer.builder()
+            .character('&')
+            .extractUrls()
+            .build();
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([^\\{\\}]+)\\}");
 
     @Getter
@@ -199,15 +203,11 @@ public class GChatPlugin implements GChatApi {
     }
 
     private GChatConfig loadConfig() throws Exception {
+        TypeSerializerCollection serializerCollection = TypeSerializerCollection.create();
+        ConfigurateComponentSerializer.configurate().addSerializersTo(serializerCollection);
+
         ConfigurationOptions options = ConfigurationOptions.defaults()
-            .setSerializers(
-                TypeSerializers.newCollection()
-                    .registerType(TypeTokens.COMPONENT, new ComponentSerializer())
-                    .registerType(TypeTokens.STYLE, new StyleSerializer())
-                    .registerType(TypeTokens.CLICK_EVENT, new ClickEventSerializer())
-                    .registerType(TypeTokens.HOVER_EVENT, new HoverEventSerializer())
-                    .registerType(TypeTokens.POS, new PosSerializer())
-            );
+                .withSerializers(serializerCollection);
 
         ConfigurationNode config = YAMLConfigurationLoader.builder()
             .setDefaultOptions(options)

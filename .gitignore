@@ -164,4 +164,4 @@ $RECYCLE.BIN/
 hs_err_pid*
 
 # System dependencies
-!lib/Neutron_N3FS.*
+!lib/Neutron-N3FS-*.jar

@@ -25,18 +25,20 @@
 
 package me.lucko.gchat.config;
 
+import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
 import lombok.ToString;
 
 import com.google.common.collect.ImmutableList;
 
+import me.lucko.gchat.GChatPlugin;
 import me.lucko.gchat.api.ChatFormat;
 
-import net.kyori.text.Component;
-import net.kyori.text.format.Style;
-import net.kyori.text.format.TextColor;
-import net.kyori.text.format.TextDecoration;
-import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
@@ -56,6 +58,8 @@ public class GChatConfig {
 
         return ret;
     }
+
+    private static final Style DEFAULT_LINK_STYLE = Style.style(NamedTextColor.WHITE, TextDecoration.UNDERLINED);
 
     private final boolean passthrough;
 
@@ -82,7 +86,7 @@ public class GChatConfig {
         if (failMsg.isEmpty()) {
             requireSendPermissionFailMessage = null;
         } else {
-            requireSendPermissionFailMessage = LegacyComponentSerializer.legacyLinking().deserialize(failMsg, '&');
+            requireSendPermissionFailMessage = GChatPlugin.LEGACY_LINKING_SERIALIZER.deserialize(failMsg);
         }
 
         this.requireReceivePermission = requirePermission.getNode("receive").getBoolean(false);
@@ -115,9 +119,9 @@ public class GChatConfig {
 
         Style _linkStyle;
         try {
-            _linkStyle = c.getNode("link-style").getValue(TypeTokens.STYLE);
+            _linkStyle = c.getNode("link-style").getValue(TypeTokens.STYLE, DEFAULT_LINK_STYLE);
         } catch (ObjectMappingException e) {
-            _linkStyle = Style.of(TextColor.WHITE, TextDecoration.UNDERLINED);
+            _linkStyle = DEFAULT_LINK_STYLE;
         }
 
         this.linkStyle = _linkStyle;

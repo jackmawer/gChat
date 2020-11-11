@@ -27,17 +27,19 @@ package me.lucko.gchat;
 
 import com.velocitypowered.api.command.Command;
 import com.velocitypowered.api.command.CommandSource;
-import net.kyori.text.TextComponent;
-import net.kyori.text.format.TextColor;
-import net.kyori.text.format.TextDecoration;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import java.util.List;
 
 public class GChatCommand implements Command {
-    private static final TextComponent PREFIX = TextComponent.of("[").color(TextColor.GRAY).decoration(TextDecoration.BOLD, true)
-            .append(TextComponent.of("gChat").color(TextColor.DARK_RED).decoration(TextDecoration.BOLD, true))
-            .append(TextComponent.of("]").color(TextColor.GRAY).decoration(TextDecoration.BOLD, true))
-            .append(TextComponent.of(" ").decoration(TextDecoration.BOLD, false));
+    private static final TextComponent PREFIX = Component.text("[").color(NamedTextColor.GRAY).decoration(TextDecoration.BOLD, true)
+            .append(Component.text("gChat").color(NamedTextColor.DARK_RED).decoration(TextDecoration.BOLD, true))
+            .append(Component.text("]").color(NamedTextColor.GRAY).decoration(TextDecoration.BOLD, true))
+            .append(Component.text(" ").decoration(TextDecoration.BOLD, false));
 
     private final GChatPlugin plugin;
 
@@ -48,9 +50,9 @@ public class GChatCommand implements Command {
     @Override
     public void execute(CommandSource source, String[] args) {
         if (args.length == 0) {
-            TextComponent versionMsg = PREFIX.append(TextComponent.of("Running gChat for Velocity ").color(TextColor.RED).decoration(TextDecoration.BOLD, false))
-                .append(TextComponent.of("v" + plugin.getDescription().getVersion().get()).color(TextColor.WHITE).decoration(TextDecoration.BOLD, false))
-                .append(TextComponent.of(".").color(TextColor.RED).decoration(TextDecoration.BOLD, false));
+            TextComponent versionMsg = PREFIX.append(Component.text("Running gChat for Velocity ").color(NamedTextColor.RED).decoration(TextDecoration.BOLD, false))
+                .append(Component.text("v" + plugin.getDescription().getVersion().get()).color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD, false))
+                .append(Component.text(".").color(NamedTextColor.RED).decoration(TextDecoration.BOLD, false));
 
             source.sendMessage(versionMsg);
             return;
@@ -63,16 +65,16 @@ public class GChatCommand implements Command {
 
             TextComponent reloadMsg;
             if (result) {
-                reloadMsg = PREFIX.append(TextComponent.of("Reload successful.").color(TextColor.GREEN).decoration(TextDecoration.BOLD, false));
+                reloadMsg = PREFIX.append(Component.text("Reload successful.").color(NamedTextColor.GREEN).decoration(TextDecoration.BOLD, false));
             } else {
-                reloadMsg = PREFIX.append(TextComponent.of("Reload failed. Check the console for errors").color(TextColor.RED).decoration(TextDecoration.BOLD, false));
+                reloadMsg = PREFIX.append(Component.text("Reload failed. Check the console for errors").color(NamedTextColor.RED).decoration(TextDecoration.BOLD, false));
             }
 
             source.sendMessage(reloadMsg);
             return;
         }
 
-        TextComponent unknownCommand = PREFIX.append(TextComponent.of("Unknown sub command.").color(TextColor.WHITE).decoration(TextDecoration.BOLD, false));
+        TextComponent unknownCommand = PREFIX.append(Component.text("Unknown sub command.").color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD, false));
         source.sendMessage(unknownCommand);
     }
 
