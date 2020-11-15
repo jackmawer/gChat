@@ -81,7 +81,7 @@ import java.util.regex.Pattern;
 )
 public class GChatPlugin implements GChatApi {
     @Inject private ProxyServer proxy;
-    @Inject private Logger logger;
+    @Inject @Getter private Logger logger;
     @Inject @DataDirectory private Path dataDirectory;
 
     public static final LegacyComponentSerializer LEGACY_LINKING_SERIALIZER = LegacyComponentSerializer.builder()

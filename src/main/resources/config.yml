@@ -4,6 +4,10 @@
 # backend server or just ignored.
 passthrough: true
 
+# Logs chat to Velocity log
+# Note: the log-chat and log-file options from gChat are not supported in gChat-Velocity
+log-chat-global: true
+
 # if permissions are required to send/receive chat messages
 require-permission:
   # if true, players will need to have the "gchat.send" permission to send messages

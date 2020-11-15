@@ -68,12 +68,16 @@ public class GChatConfig {
     private final boolean requireReceivePermission;
     private final boolean requirePermissionPassthrough;
 
+    private final boolean logChatGlobal;
+
     private final List<ChatFormat> formats;
 
     private final Style linkStyle;
 
     public GChatConfig(ConfigurationNode c) {
         this.passthrough = c.getNode("passthrough").getBoolean(true);
+
+        this.logChatGlobal = c.getNode("log-chat-global").getBoolean(true);
 
         ConfigurationNode requirePermission = c.getNode("require-permission");
         if (requirePermission.isVirtual()) {
