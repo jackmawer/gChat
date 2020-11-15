@@ -92,6 +92,10 @@
                                     <pattern>org.yaml.snakeyaml</pattern>
                                     <shadedPattern>me.lucko.gchat.lib.snakeyaml</shadedPattern>
                                 </relocation>
+                                <relocation>
+                                    <pattern>me.lucko.luckperms.placeholders</pattern>
+                                    <shadedPattern>me.lucko.gchat.lib.lpplaceholders</shadedPattern>
+                                </relocation>
                             </relocations>
                             <artifactSet>
                                 <excludes>
