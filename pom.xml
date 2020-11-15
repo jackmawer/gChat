@@ -6,7 +6,7 @@
 
     <groupId>uk.co.n3fs.mc</groupId>
     <artifactId>gchat-velocity</artifactId>
-    <version>2.1.0-SNAPSHOT</version>
+    <version>2.1.0</version>
     <name>gChat-Velocity</name>
 
     <properties>
@@ -15,11 +15,11 @@
         <maven.compiler.target>11</maven.compiler.target>
 
         <!-- Release builds -->
-        <!--<full.version>${project.version}</full.version>-->
+        <full.version>${project.version}</full.version>
 
         <!-- Development builds -->
         <!--suppress UnresolvedMavenProperty -->
-        <full.version>${project.version}-dev-${git.closest.tag.commit.count}</full.version>
+        <!--<full.version>${project.version}-dev-${git.closest.tag.commit.count}</full.version>-->
     </properties>
 
     <distributionManagement>
