@@ -42,7 +42,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import java.util.regex.Pattern;
 
 public class GChatListener {
-    private static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)(" + String.valueOf('§') + "|&)[0-9A-FK-OR]");
+    private static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)([§&])[0-9A-FK-OR]");
 
     private final GChatPlugin plugin;
     private final LegacyComponentSerializer legacyLinkingSerializer;
@@ -127,7 +127,7 @@ public class GChatListener {
         formatText = formatText.replace("{message}", playerMessage);
 
         // apply any hover events
-        HoverEvent hoverEvent = hover == null ? null : HoverEvent.showText(LegacyComponentSerializer.legacyAmpersand().deserialize(hover));
+        HoverEvent<Component> hoverEvent = hover == null ? null : HoverEvent.showText(LegacyComponentSerializer.legacyAmpersand().deserialize(hover));
         ClickEvent clickEvent = clickType == null ? null : ClickEvent.clickEvent(clickType, clickValue);
 
         // convert the format to a message
@@ -159,7 +159,7 @@ public class GChatListener {
                 continue;
             }
 
-            p.sendMessage(message);
+            p.sendMessage(player, message);
         }
     }
 
