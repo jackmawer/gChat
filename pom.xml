@@ -184,7 +184,7 @@
         <repository>
             <id>bintray-n3fs-minecraft</id>
             <name>n3fs-minecraft</name>
-            <url>https://api.bintray.com/maven/n3fs/minecraft/gchat-velocity/;publish=1</url>
+            <url>https://dl.bintray.com/n3fs/minecraft/</url>
         </repository>
     </repositories>
 
