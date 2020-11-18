@@ -6,7 +6,7 @@
 
     <groupId>uk.co.n3fs.mc</groupId>
     <artifactId>gchat-velocity</artifactId>
-    <version>2.1.1</version>
+    <version>2.1.2-SNAPSHOT</version>
     <name>gChat-Velocity</name>
 
     <properties>
@@ -15,11 +15,11 @@
         <maven.compiler.target>11</maven.compiler.target>
 
         <!-- Release builds -->
-        <full.version>${project.version}</full.version>
+        <!--<full.version>${project.version}</full.version>-->
 
         <!-- Development builds -->
         <!--suppress UnresolvedMavenProperty -->
-        <!--<full.version>${project.version}-dev-${git.closest.tag.commit.count}</full.version>-->
+        <full.version>${project.version}-dev-${git.closest.tag.commit.count}</full.version>
     </properties>
 
     <distributionManagement>
@@ -88,14 +88,6 @@
                             <minimizeJar>true</minimizeJar>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <relocations>
-                                <relocation>
-                                    <pattern>ninja.leaping.configurate</pattern>
-                                    <shadedPattern>me.lucko.gchat.lib.configurate</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.yaml.snakeyaml</pattern>
-                                    <shadedPattern>me.lucko.gchat.lib.snakeyaml</shadedPattern>
-                                </relocation>
                                 <relocation>
                                     <pattern>me.lucko.luckperms.placeholders</pattern>
                                     <shadedPattern>me.lucko.gchat.lib.lpplaceholders</shadedPattern>
