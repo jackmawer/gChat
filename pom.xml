@@ -163,7 +163,7 @@
             <groupId>uk.co.n3fs.mc</groupId>
             <artifactId>n3fs-neutron</artifactId>
             <version>4.0.2</version>
-            <type>pom</type>
+            <classifier>all</classifier>
             <scope>provided</scope>
         </dependency>
     </dependencies>
