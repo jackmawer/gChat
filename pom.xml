@@ -51,6 +51,19 @@
         </resources>
         <plugins>
             <plugin>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok-maven-plugin</artifactId>
+                <version>1.18.16.0</version>
+                <executions>
+                  <execution>
+                    <phase>generate-sources</phase>
+                    <goals>
+                      <goal>delombok</goal>
+                    </goals>
+                  </execution>
+                </executions>
+              </plugin>
+            <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
                 <version>1.5.3</version>
@@ -125,7 +138,7 @@
                         <tags>true</tags>
                     </gitDescribe>
                 </configuration>
-        </plugin>
+            </plugin>
         </plugins>
     </build>
 
@@ -140,7 +153,7 @@
             <groupId>net.kyori</groupId>
             <artifactId>adventure-serializer-configurate3</artifactId>
             <version>4.1.1</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.luckperms</groupId>
