@@ -140,7 +140,7 @@
             <groupId>net.kyori</groupId>
             <artifactId>adventure-serializer-configurate3</artifactId>
             <version>4.1.1</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.luckperms</groupId>
