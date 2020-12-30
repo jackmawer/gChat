@@ -30,7 +30,6 @@ import com.velocitypowered.api.command.CommandSource;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import java.util.List;
@@ -51,8 +50,8 @@ public class GChatCommand implements Command {
     public void execute(CommandSource source, String[] args) {
         if (args.length == 0) {
             TextComponent versionMsg = PREFIX.append(Component.text("Running gChat for Velocity ").color(NamedTextColor.RED).decoration(TextDecoration.BOLD, false))
-                .append(Component.text("v" + plugin.getDescription().getVersion().get()).color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD, false))
-                .append(Component.text(".").color(NamedTextColor.RED).decoration(TextDecoration.BOLD, false));
+                    .append(Component.text("v" + plugin.getDescription().getVersion().get()).color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD, false))
+                    .append(Component.text(".").color(NamedTextColor.RED).decoration(TextDecoration.BOLD, false));
 
             source.sendMessage(versionMsg);
             return;

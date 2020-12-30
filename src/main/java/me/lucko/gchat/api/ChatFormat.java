@@ -29,7 +29,6 @@ import com.velocitypowered.api.proxy.Player;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
-
 import net.kyori.adventure.text.event.ClickEvent;
 import ninja.leaping.configurate.ConfigurationNode;
 

@@ -73,7 +73,7 @@ public interface GChatApi {
      * Performs a placeholder replacement on the given message
      *
      * @param player the player to replace in the context of
-     * @param text the text containing the placeholders to be replaced
+     * @param text   the text containing the placeholders to be replaced
      * @return the replaced text
      */
     String replacePlaceholders(Player player, String text);

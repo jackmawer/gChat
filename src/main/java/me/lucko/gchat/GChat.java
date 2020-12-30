@@ -34,6 +34,9 @@ public final class GChat {
 
     private static GChatApi api = null;
 
+    private GChat() {
+    }
+
     public static GChatApi getApi() {
         return api;
     }
@@ -41,7 +44,5 @@ public final class GChat {
     static void setApi(GChatApi api) {
         GChat.api = api;
     }
-
-    private GChat() {}
 
 }

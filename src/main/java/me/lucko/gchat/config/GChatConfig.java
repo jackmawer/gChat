@@ -25,24 +25,20 @@
 
 package me.lucko.gchat.config;
 
-import com.google.gson.reflect.TypeToken;
+import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.ToString;
-
-import com.google.common.collect.ImmutableList;
-
 import me.lucko.gchat.GChatPlugin;
 import me.lucko.gchat.api.ChatFormat;
-
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,28 +46,14 @@ import java.util.Map;
 @Getter
 @ToString
 public class GChatConfig {
-    public static String getStringNonNull(ConfigurationNode configuration, String path) throws IllegalArgumentException {
-        String ret = configuration.getNode(path).getString();
-        if (ret == null) {
-            throw new IllegalArgumentException("Missing string value at '" + path + "'");
-        }
-
-        return ret;
-    }
-
     private static final Style DEFAULT_LINK_STYLE = Style.style(NamedTextColor.WHITE, TextDecoration.UNDERLINED);
-
     private final boolean passthrough;
-
     private final boolean requireSendPermission;
     private final Component requireSendPermissionFailMessage;
     private final boolean requireReceivePermission;
     private final boolean requirePermissionPassthrough;
-
     private final boolean logChatGlobal;
-
     private final List<ChatFormat> formats;
-
     private final Style linkStyle;
 
     public GChatConfig(ConfigurationNode c) {
@@ -114,10 +96,7 @@ public class GChatConfig {
         }
 
         List<ChatFormat> formatsList = new ArrayList<>(formats.values());
-        formatsList.sort((o1, o2) -> {
-            int ret = Integer.compare(o1.getPriority(), o2.getPriority());
-            return ret > 0 ? -1 : 1;
-        });
+        formatsList.sort(Comparator.comparingInt(ChatFormat::getPriority));
 
         this.formats = ImmutableList.copyOf(formatsList);
 
@@ -129,6 +108,15 @@ public class GChatConfig {
         }
 
         this.linkStyle = _linkStyle;
+    }
+
+    public static String getStringNonNull(ConfigurationNode configuration, String path) throws IllegalArgumentException {
+        String ret = configuration.getNode(path).getString();
+        if (ret == null) {
+            throw new IllegalArgumentException("Missing string value at '" + path + "'");
+        }
+
+        return ret;
     }
 
 }

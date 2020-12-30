@@ -25,6 +25,7 @@
 
 package me.lucko.gchat;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
@@ -38,9 +39,6 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import lombok.Getter;
 import lombok.NonNull;
-
-import com.google.common.collect.ImmutableSet;
-
 import me.lucko.gchat.api.ChatFormat;
 import me.lucko.gchat.api.GChatApi;
 import me.lucko.gchat.api.Placeholder;
@@ -48,7 +46,6 @@ import me.lucko.gchat.config.GChatConfig;
 import me.lucko.gchat.hooks.LuckPermsHook;
 import me.lucko.gchat.hooks.NeutronN3FSHook;
 import me.lucko.gchat.placeholder.StandardPlaceholders;
-
 import net.kyori.adventure.serializer.configurate3.ConfigurateComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -70,30 +67,32 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Plugin(
-    id = "gchat-velocity",
-    name = "gChat for Velocity",
-    authors = {"Luck", "md678685"},
-    version = "VERSION", // filled in during build
-    dependencies = {
-        @Dependency(id = "luckperms", optional = true),
-        @Dependency(id = "neutron-n3fs", optional = true)
-    }
+        id = "gchat-velocity",
+        name = "gChat for Velocity",
+        authors = {"Luck", "md678685"},
+        version = "VERSION", // filled in during build
+        dependencies = {
+                @Dependency(id = "luckperms", optional = true),
+                @Dependency(id = "neutron-n3fs", optional = true)
+        }
 )
 public class GChatPlugin implements GChatApi {
-    @Inject private ProxyServer proxy;
-    @Inject @Getter private Logger logger;
-    @Inject @DataDirectory private Path dataDirectory;
-
     public static final LegacyComponentSerializer LEGACY_LINKING_SERIALIZER = LegacyComponentSerializer.builder()
             .character('&')
             .extractUrls()
             .build();
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([^\\{\\}]+)\\}");
-
+    private final Set<Placeholder> placeholders = ConcurrentHashMap.newKeySet();
+    @Inject
+    private ProxyServer proxy;
+    @Inject
+    @Getter
+    private Logger logger;
+    @Inject
+    @DataDirectory
+    private Path dataDirectory;
     @Getter
     private GChatConfig config;
-
-    private final Set<Placeholder> placeholders = ConcurrentHashMap.newKeySet();
 
     @Subscribe
     public void onEnable(ProxyInitializeEvent event) {
@@ -210,10 +209,10 @@ public class GChatPlugin implements GChatApi {
                 .withSerializers(serializerCollection);
 
         ConfigurationNode config = YAMLConfigurationLoader.builder()
-            .setDefaultOptions(options)
-            .setFile(getBundledFile("config.yml"))
-            .build()
-            .load();
+                .setDefaultOptions(options)
+                .setFile(getBundledFile("config.yml"))
+                .build()
+                .load();
         return new GChatConfig(config);
     }
 
