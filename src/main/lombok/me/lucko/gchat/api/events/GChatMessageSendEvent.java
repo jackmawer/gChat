@@ -28,12 +28,10 @@ package me.lucko.gchat.api.events;
 import com.velocitypowered.api.event.ResultedEvent;
 import com.velocitypowered.api.event.player.PlayerChatEvent;
 import com.velocitypowered.api.proxy.Player;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
 import me.lucko.gchat.api.ChatFormat;
 
 /**

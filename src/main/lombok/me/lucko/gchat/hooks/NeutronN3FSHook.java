@@ -18,12 +18,12 @@ public class NeutronN3FSHook {
     @Subscribe(order = PostOrder.LATE)
     public void onMessageSend(GChatMessageSendEvent e) {
         neutron.getUserManager()
-            .getUser(e.getRecipient())
-            .ifPresent(user -> {
-                if (user.isIgnoringPlayer(e.getSender())) {
-                    e.setResult(PlayerChatEvent.ChatResult.denied());
-                }
-            });
+                .getUser(e.getRecipient())
+                .ifPresent(user -> {
+                    if (user.isIgnoringPlayer(e.getSender())) {
+                        e.setResult(PlayerChatEvent.ChatResult.denied());
+                    }
+                });
     }
 
 }

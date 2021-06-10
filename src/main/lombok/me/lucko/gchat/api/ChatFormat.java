@@ -29,7 +29,6 @@ import com.velocitypowered.api.proxy.Player;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
-
 import net.kyori.adventure.text.event.ClickEvent;
 import ninja.leaping.configurate.ConfigurationNode;
 
@@ -90,7 +89,19 @@ public class ChatFormat {
     }
 
     public boolean canUse(Player player) {
-        return !checkPermission || player.hasPermission("gchat.format." + id);
+
+        if (!checkPermission) {
+            System.out.println("Player does not need permission for " + id);
+            return true;
+        }
+
+        if (player.hasPermission("gchat.format." + id)) {
+            System.out.println("Player DOES HAVE permission to use " + id);
+            return true;
+        }
+
+        System.out.println("Player DOES NOT have permission to use " + id);
+        return false;
     }
 
 }

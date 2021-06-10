@@ -136,8 +136,8 @@ public class GChatListener {
 
         // convert the format to a message
         TextComponent message = legacyLinkingSerializer
-            .deserialize(formatText)
-            .toBuilder()
+                .deserialize(formatText)
+                .toBuilder()
                 .applyDeep(m -> {
                     Component mComponent = m.build();
 
