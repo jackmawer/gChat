@@ -11,6 +11,21 @@
 *.iml
 .idea_modules/
 
+## IDE files
+*.komodo*
+*.sublime*
+*.code-workspace
+
+## OS specific files
+.DS_Store
+.DS_Store?
+.fuse*
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
 # JIRA plugin
 atlassian-ide-plugin.xml
 
