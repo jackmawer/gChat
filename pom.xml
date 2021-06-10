@@ -55,14 +55,14 @@
                 <artifactId>lombok-maven-plugin</artifactId>
                 <version>1.18.16.0</version>
                 <executions>
-                  <execution>
-                    <phase>generate-sources</phase>
-                    <goals>
-                      <goal>delombok</goal>
-                    </goals>
-                  </execution>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>delombok</goal>
+                        </goals>
+                    </execution>
                 </executions>
-              </plugin>
+            </plugin>
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
@@ -139,6 +139,20 @@
                     </gitDescribe>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.0</version>
+                <configuration>
+                    <includes>
+                        <include>target/generated-sources/delombok/*</include>
+                    </includes>
+                    <excludes>
+                        <exclude>src/main/java</exclude>
+                        <exclude>src/main/lombok</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -152,7 +166,7 @@
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-serializer-configurate3</artifactId>
-            <version>4.1.1</version>
+            <version>4.3.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

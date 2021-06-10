@@ -124,6 +124,9 @@ public class GChatListener {
             playerMessage = STRIP_COLOR_PATTERN.matcher(playerMessage).replaceAll("");
         }
 
+        // Create text to send to ourselves
+        String self_text = formatText.replace("{message}", "&b" + playerMessage);
+
         // apply the players message to the chat format
         formatText = formatText.replace("{message}", playerMessage);
 
@@ -134,6 +137,22 @@ public class GChatListener {
         // convert the format to a message
         TextComponent message = legacyLinkingSerializer
             .deserialize(formatText)
+            .toBuilder()
+                .applyDeep(m -> {
+                    Component mComponent = m.build();
+
+                    if (hoverEvent != null && mComponent.hoverEvent() == null) {
+                        m.hoverEvent(hoverEvent);
+                    }
+                    if (clickEvent != null && mComponent.clickEvent() == null) {
+                        m.clickEvent(clickEvent);
+                    }
+                })
+                .build();
+
+        // convert the format to a message
+        TextComponent self_message = legacyLinkingSerializer
+            .deserialize(self_text)
             .toBuilder()
                 .applyDeep(m -> {
                     Component mComponent = m.build();
@@ -164,7 +183,11 @@ public class GChatListener {
                 continue;
             }
 
-            p.sendMessage(player, message);
+            if (player.getUniqueId().equals(p.getUniqueId())) {
+                p.sendMessage(player, self_message);
+            } else {
+                p.sendMessage(player, message);
+            }
         }
     }
 
