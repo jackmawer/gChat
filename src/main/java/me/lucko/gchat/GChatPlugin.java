@@ -121,7 +121,7 @@ public class GChatPlugin implements GChatApi {
         proxy.getEventManager().register(this, new GChatListener(this));
 
         // register command
-        proxy.getCommandManager().register(new GChatCommand(this), "gchat", "globalchat");
+        proxy.getCommandManager().register("gchat", new GChatCommand(this), "globalchat");
 
         // init api singleton
         GChat.setApi(this);

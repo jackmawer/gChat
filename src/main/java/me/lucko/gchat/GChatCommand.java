@@ -27,14 +27,18 @@ package me.lucko.gchat;
 
 import com.velocitypowered.api.command.Command;
 import com.velocitypowered.api.command.CommandSource;
+import com.velocitypowered.api.command.CommandManager;
+import com.velocitypowered.api.command.CommandMeta;
+import com.velocitypowered.api.command.SimpleCommand;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+import java.util.Collections;
 import java.util.List;
 
-public class GChatCommand implements Command {
+public class GChatCommand implements SimpleCommand {
     private static final TextComponent PREFIX = Component.text("[").color(NamedTextColor.GRAY).decoration(TextDecoration.BOLD, true)
             .append(Component.text("gChat").color(NamedTextColor.DARK_RED).decoration(TextDecoration.BOLD, true))
             .append(Component.text("]").color(NamedTextColor.GRAY).decoration(TextDecoration.BOLD, true))
@@ -47,7 +51,10 @@ public class GChatCommand implements Command {
     }
 
     @Override
-    public void execute(CommandSource source, String[] args) {
+    public void execute(SimpleCommand.Invocation invocation) {
+        CommandSource source = invocation.source();
+        String[] args = invocation.arguments();
+
         if (args.length == 0) {
             TextComponent versionMsg = PREFIX.append(Component.text("Running gChat for Velocity ").color(NamedTextColor.RED).decoration(TextDecoration.BOLD, false))
                     .append(Component.text("v" + plugin.getDescription().getVersion().get()).color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD, false))
@@ -78,7 +85,7 @@ public class GChatCommand implements Command {
     }
 
     @Override
-    public List<String> suggest(CommandSource source, String[] currentArgs) {
-        return null;
+    public List<String> suggest(Invocation invocation) {
+        return Collections.emptyList();
     }
 }
