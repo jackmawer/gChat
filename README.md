@@ -3,14 +3,14 @@ A simple global chat plugin for Velocity, based on [lucko/gChat](https://github.
 
 * **Downloads** - <https://github.com/N3FS/gChat/releases>
 
-### Features
+## Features
 * Global chat channel throughout your network
 * Placeholders to customize chat formatting
 * Multiple formats selected using weight
 * API for adding additional placeholders, or listening to chat events
 
-### Placeholders
-#### Standard Placeholders
+## Placeholders
+### Standard Placeholders
 These placeholders are provided by gChat.
 
 * `{username}` or `{name}` - the players username
@@ -19,12 +19,12 @@ These placeholders are provided by gChat.
 * `{display_name}` - the players display name
 * `{message}` - the chat message being sent by the player.
 
-#### Plugin Hooks
+### Plugin Hooks
 gChat also provides hooks for the following plugins.
 
 * [**LuckPerms**](https://github.com/lucko/LuckPerms) - gChat will hook with LuckPerms if it's installed on the proxy, and allows you to use any of the placeholders listed [here](https://github.com/lucko/LuckPerms/wiki/PlaceholderAPI).
 
-### Configuration
+## Configuration
 ```yaml
 # gChat Configuration
 
@@ -94,3 +94,7 @@ formats:
         type: suggest_command
         value: "/msg {name} "
 ```
+
+## Building
+
+Clone the repository, ensure you have a recent JDK (8 or newer) installed, then run `./gradlew build` (or `./gradlew.bat build` on Windows).

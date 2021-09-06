@@ -33,12 +33,11 @@ import com.velocitypowered.api.event.proxy.ProxyReloadEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
+import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
-import lombok.Getter;
-import lombok.NonNull;
 import me.lucko.gchat.api.ChatFormat;
 import me.lucko.gchat.api.GChatApi;
 import me.lucko.gchat.api.Placeholder;
@@ -67,10 +66,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Plugin(
-        id = "gchat-velocity",
-        name = "gChat for Velocity",
+        id = "@ID@",
+        name = "@NAME@",
+        description = "@DESCRIPTION@",
         authors = {"Luck", "md678685"},
-        version = "VERSION", // filled in during build
+        version = "@VERSION@", // filled in during build
         dependencies = {
                 @Dependency(id = "luckperms", optional = true),
                 @Dependency(id = "neutron-n3fs", optional = true)
@@ -82,21 +82,24 @@ public class GChatPlugin implements GChatApi {
             .extractUrls()
             .build();
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([^\\{\\}]+)\\}");
+
+    private final ProxyServer proxy;
+    private final Logger logger;
+    private final Path dataDirectory;
     private final Set<Placeholder> placeholders = ConcurrentHashMap.newKeySet();
-    @Inject
-    private ProxyServer proxy;
-    @Inject
-    @Getter
-    private Logger logger;
-    @Inject
-    @DataDirectory
-    private Path dataDirectory;
-    @Getter
+
     private GChatConfig config;
+
+    @Inject
+    public GChatPlugin(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
+        this.proxy = proxy;
+        this.logger = logger;
+        this.dataDirectory = dataDirectory;
+    }
 
     @Subscribe
     public void onEnable(ProxyInitializeEvent event) {
-        logger.info("Enabling gChat v" + getDescription().getVersion().get());
+        logger.info("Enabling gChat v" + getDescription().getVersion().orElse("Unknown"));
 
         // load configuration
         try {
@@ -134,12 +137,12 @@ public class GChatPlugin implements GChatApi {
     }
 
     @Override
-    public boolean registerPlaceholder(@NonNull Placeholder placeholder) {
+    public boolean registerPlaceholder(Placeholder placeholder) {
         return placeholders.add(placeholder);
     }
 
     @Override
-    public boolean unregisterPlaceholder(@NonNull Placeholder placeholder) {
+    public boolean unregisterPlaceholder(Placeholder placeholder) {
         return placeholders.remove(placeholder);
     }
 
@@ -208,12 +211,12 @@ public class GChatPlugin implements GChatApi {
         ConfigurationOptions options = ConfigurationOptions.defaults()
                 .withSerializers(serializerCollection);
 
-        ConfigurationNode config = YAMLConfigurationLoader.builder()
+        ConfigurationNode configNode = YAMLConfigurationLoader.builder()
                 .setDefaultOptions(options)
                 .setFile(getBundledFile("config.yml"))
                 .build()
                 .load();
-        return new GChatConfig(config);
+        return new GChatConfig(configNode);
     }
 
     private File getBundledFile(String name) {
@@ -236,6 +239,14 @@ public class GChatPlugin implements GChatApi {
     }
 
     PluginDescription getDescription() {
-        return proxy.getPluginManager().getPlugin("gchat-velocity").get().getDescription();
+        return proxy.getPluginManager().getPlugin("gchat-velocity").map(PluginContainer::getDescription).orElse(null);
+    }
+
+    public Logger getLogger() {
+        return this.logger;
+    }
+
+    public GChatConfig getConfig() {
+        return this.config;
     }
 }

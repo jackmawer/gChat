@@ -26,8 +26,6 @@
 package me.lucko.gchat.config;
 
 import com.google.common.collect.ImmutableList;
-import lombok.Getter;
-import lombok.ToString;
 import me.lucko.gchat.GChatPlugin;
 import me.lucko.gchat.api.ChatFormat;
 import net.kyori.adventure.text.Component;
@@ -43,8 +41,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Getter
-@ToString
 public class GChatConfig {
     private static final Style DEFAULT_LINK_STYLE = Style.style(NamedTextColor.WHITE, TextDecoration.UNDERLINED);
     private final boolean passthrough;
@@ -83,7 +79,7 @@ public class GChatConfig {
             throw new IllegalArgumentException("Missing section: formats");
         }
 
-        Map<String, ChatFormat> formats = new HashMap<>();
+        Map<String, ChatFormat> currentFormats = new HashMap<>();
         for (Object id : formatsSection.getChildrenMap().keySet()) {
             ConfigurationNode formatSection = formatsSection.getNode(id);
             if (formatSection.isVirtual() || !(id instanceof String)) {
@@ -92,22 +88,23 @@ public class GChatConfig {
 
             String key = (String) id;
 
-            formats.put(key.toLowerCase(), new ChatFormat(key.toLowerCase(), formatSection));
+            currentFormats.put(key.toLowerCase(), new ChatFormat(key.toLowerCase(), formatSection));
         }
 
-        List<ChatFormat> formatsList = new ArrayList<>(formats.values());
+        List<ChatFormat> formatsList = new ArrayList<>(currentFormats.values());
         formatsList.sort(Comparator.comparingInt(ChatFormat::getPriority));
 
         this.formats = ImmutableList.copyOf(formatsList);
 
-        Style _linkStyle;
+        Style currentLinkStyle;
         try {
-            _linkStyle = c.getNode("link-style").getValue(TypeTokens.STYLE, DEFAULT_LINK_STYLE);
+            //noinspection UnstableApiUsage
+            currentLinkStyle = c.getNode("link-style").getValue(TypeTokens.STYLE, DEFAULT_LINK_STYLE);
         } catch (ObjectMappingException e) {
-            _linkStyle = DEFAULT_LINK_STYLE;
+            currentLinkStyle = DEFAULT_LINK_STYLE;
         }
 
-        this.linkStyle = _linkStyle;
+        this.linkStyle = currentLinkStyle;
     }
 
     public static String getStringNonNull(ConfigurationNode configuration, String path) throws IllegalArgumentException {
@@ -119,4 +116,39 @@ public class GChatConfig {
         return ret;
     }
 
+    public boolean isPassthrough() {
+        return this.passthrough;
+    }
+
+    public boolean isRequireSendPermission() {
+        return this.requireSendPermission;
+    }
+
+    public Component getRequireSendPermissionFailMessage() {
+        return this.requireSendPermissionFailMessage;
+    }
+
+    public boolean isRequireReceivePermission() {
+        return this.requireReceivePermission;
+    }
+
+    public boolean isRequirePermissionPassthrough() {
+        return this.requirePermissionPassthrough;
+    }
+
+    public boolean isLogChatGlobal() {
+        return this.logChatGlobal;
+    }
+
+    public List<ChatFormat> getFormats() {
+        return this.formats;
+    }
+
+    public Style getLinkStyle() {
+        return this.linkStyle;
+    }
+
+    public String toString() {
+        return "GChatConfig(passthrough=" + this.isPassthrough() + ", requireSendPermission=" + this.isRequireSendPermission() + ", requireSendPermissionFailMessage=" + this.getRequireSendPermissionFailMessage() + ", requireReceivePermission=" + this.isRequireReceivePermission() + ", requirePermissionPassthrough=" + this.isRequirePermissionPassthrough() + ", logChatGlobal=" + this.isLogChatGlobal() + ", formats=" + this.getFormats() + ", linkStyle=" + this.getLinkStyle() + ")";
+    }
 }
