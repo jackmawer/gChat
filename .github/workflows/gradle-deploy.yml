@@ -20,6 +20,9 @@ jobs:
         run: chmod +x gradlew
       - name: Build and deploy with Gradle
         run: ./gradlew clean build publish
+        env:
+          ORG_GRADLE_PROJECT_n3fsUsername: ${{ secrets.REPOSILITE_USERNAME }}
+          ORG_GRADLE_PROJECT_n3fsPassword: ${{ secrets.REPOSILITE_PASSWORD }}
       - name: Archive artifact
         uses: actions/upload-artifact@v2.2.0
         with:
