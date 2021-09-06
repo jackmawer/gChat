@@ -1,0 +1,78 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.kyori.indra' version '2.0.6'
+    id 'net.kyori.indra.publishing' version '2.0.6'
+    id 'net.kyori.blossom' version '1.3.0'
+}
+
+group = 'uk.co.n3fs.mc'
+version = '3.0.0-SNAPSHOT'
+description = 'A simple global chat plugin for Velocity.'
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://ci.lucko.me/plugin/repository/everything/'
+    }
+
+    maven {
+        url 'https://repo.velocitypowered.com/snapshots/'
+    }
+
+    maven {
+        url 'https://repo.essentialsx.net/n3fs/'
+    }
+}
+
+dependencies {
+    compileOnly 'com.velocitypowered:velocity-api:3.0.0'
+    annotationProcessor 'com.velocitypowered:velocity-api:3.0.0'
+
+    compileOnly 'net.luckperms:api:5.2'
+    implementation 'me.lucko.luckperms:placeholders-common:5.1-SNAPSHOT'
+    implementation 'net.kyori:adventure-serializer-configurate3:4.3.0'
+
+    compileOnly 'org.projectlombok:lombok:1.18.20' // todo remove
+    implementation 'uk.co.n3fs.mc:Neutron-N3FS:5.0.0-SNAPSHOT'
+}
+
+indra {
+    github('N3FS', 'Neutron') {
+        ci(true)
+    }
+    mitLicense()
+
+    publishReleasesTo('n3fs', 'https://repo.essentialsx.net/n3fs/')
+    publishSnapshotsTo('n3fs', 'https://repo.essentialsx.net/n3fs/')
+
+    configurePublications {
+        pom {
+            description.set('A simple global chat plugin for Velocity.')
+            url.set('https://n3fs.co.uk')
+            developers {
+                developer {
+                    id.set('mdcfe')
+                    name.set('MD')
+                    email.set('md@n3fs.co.uk')
+                }
+                developer {
+                    id.set('lucko')
+                    name.set('Luck')
+                }
+            }
+        }
+    }
+
+    javaVersions {
+        target(11)
+        minimumToolchain(16)
+    }
+}
+
+blossom {
+    replaceToken '@ID@', name.toLowerCase()
+    replaceToken '@NAME@', name
+    replaceToken '@VERSION@', version
+    replaceToken '@DESCRIPTION@', description
+}
