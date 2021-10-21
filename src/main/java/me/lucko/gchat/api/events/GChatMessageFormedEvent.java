@@ -25,21 +25,14 @@
 
 package me.lucko.gchat.api.events;
 
+import com.google.common.base.Objects;
 import com.velocitypowered.api.proxy.Player;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
 import me.lucko.gchat.api.ChatFormat;
 import net.kyori.adventure.text.Component;
 
 /**
  * Called when a chat message has been fully formed and is about to be sent to recipients.
  */
-@Getter
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-@ToString
 public class GChatMessageFormedEvent {
 
     private final Player sender;
@@ -47,4 +40,43 @@ public class GChatMessageFormedEvent {
     private final String rawMessage;
     private final Component message;
 
+    public GChatMessageFormedEvent(Player sender, ChatFormat format, String rawMessage, Component message) {
+        this.sender = sender;
+        this.format = format;
+        this.rawMessage = rawMessage;
+        this.message = message;
+    }
+
+    public Player getSender() {
+        return this.sender;
+    }
+
+    public ChatFormat getFormat() {
+        return this.format;
+    }
+
+    public String getRawMessage() {
+        return this.rawMessage;
+    }
+
+    public Component getMessage() {
+        return this.message;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GChatMessageFormedEvent that = (GChatMessageFormedEvent) o;
+        return Objects.equal(sender, that.sender) && Objects.equal(format, that.format) && Objects.equal(rawMessage, that.rawMessage) && Objects.equal(message, that.message);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(sender, format, rawMessage, message);
+    }
+
+    public String toString() {
+        return "GChatMessageFormedEvent(sender=" + this.getSender() + ", format=" + this.getFormat() + ", rawMessage=" + this.getRawMessage() + ", message=" + this.getMessage() + ")";
+    }
 }
