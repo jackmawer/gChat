@@ -32,12 +32,15 @@ import com.velocitypowered.api.event.connection.LoginEvent;
 import com.velocitypowered.api.event.player.PlayerChatEvent;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import me.lucko.gchat.api.ChatFormat;
 import me.lucko.gchat.api.events.GChatEvent;
 import me.lucko.gchat.api.events.GChatMessageFormedEvent;
 import me.lucko.gchat.api.events.GChatMessageSendEvent;
+import me.lucko.gchat.config.GChatConfig;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -63,24 +66,22 @@ public class GChatListener {
 
     }
 
+    /**
+     * Someone has connected to the network
+     */
     @Subscribe(order = PostOrder.NORMAL)
-    public void onJoin(LoginEvent e) {
+    public void onLogin(LoginEvent e) {
         Player player = e.getPlayer();
 
-        System.out.println("Player " + player + " joined the network");
+        ChatFormat format = plugin.getFormat(player, "login").orElse(null);
 
-        TextComponent message = Component.text(player.getUsername()).color(NamedTextColor.AQUA)
-                .append(Component.text(" has logged on to the Blackblock.rocks network").color(NamedTextColor.YELLOW));
-
-        // send the message to online players
-        for (Player p : plugin.getProxy().getAllPlayers()) {
-
-            if (player.getUniqueId().equals(p.getUniqueId())) {
-                // Don't send it to ourselves (probably wont be in this group anyway)
-            } else {
-                p.sendMessage(player, message);
-            }
+        if (format == null) {
+            return;
         }
+
+        TextComponent message = this.createFormattedText(player, format, "");
+
+        this.broadcastMessage(message);
     }
 
     @Subscribe(order = PostOrder.NORMAL)
@@ -89,61 +90,55 @@ public class GChatListener {
         RegisteredServer server = e.getServer();
         ServerInfo info = server.getServerInfo();
 
-        System.out.println("Player " + player + " joined server: " + info.getName());
+        ChatFormat format = plugin.getFormat(player, "join").orElse(null);
 
-        TextComponent message = Component.text(player.getUsername()).color(NamedTextColor.AQUA)
-                .append(Component.text(" has joined the " + info.getName() + " server").color(NamedTextColor.YELLOW));
-
-        // send the message to online players
-        for (Player p : plugin.getProxy().getAllPlayers()) {
-
-            if (player.getUniqueId().equals(p.getUniqueId())) {
-                // No need to send the disconnect message to the user disconnecting
-                p.sendMessage(player, message);
-            } else {
-                p.sendMessage(player, message);
-            }
+        if (format == null) {
+            return;
         }
 
+        TextComponent message = this.createFormattedText(player, server, format, "");
+
+        this.broadcastMessage(message);
     }
 
     @Subscribe(order = PostOrder.NORMAL)
     public void onLogout(DisconnectEvent e) {
         Player player = e.getPlayer();
 
-        System.out.println("Player " + player + " exited the network");
+        ChatFormat format = plugin.getFormat(player, "logout").orElse(null);
 
-        TextComponent message = Component.text(player.getUsername()).color(NamedTextColor.AQUA)
-                .append(Component.text(" has logged out of the Blackblock.rocks network").color(NamedTextColor.YELLOW));
-
-        // send the message to online players
-        for (Player p : plugin.getProxy().getAllPlayers()) {
-
-            if (player.getUniqueId().equals(p.getUniqueId())) {
-                // No need to send the disconnect message to the user disconnecting
-            } else {
-                p.sendMessage(player, message);
-            }
+        if (format == null) {
+            return;
         }
+
+        TextComponent message = this.createFormattedText(player, format, "");
+
+        this.broadcastMessage(message);
     }
 
+    /**
+     * Listen for PlayerChat events and broadcast them to every server
+     */
     @Subscribe(order = PostOrder.NORMAL)
     public void onChat(PlayerChatEvent e) {
         Player player = e.getPlayer();
+        ProxyServer proxy = plugin.getProxy();
 
         GChatEvent gChatEvent = new GChatEvent(player, e);
-        plugin.getProxy().getEventManager().fire(gChatEvent).join();
+        proxy.getEventManager().fire(gChatEvent).join();
 
         if (!gChatEvent.getResult().isAllowed()) {
             return;
         }
-        
+
+        GChatConfig config = plugin.getConfig();
+
         // are permissions required to send chat messages?
         // does the player have perms to send the message
-        if (plugin.getConfig().isRequireSendPermission() && !player.hasPermission("gchat.send")) {
+        if (config.isRequireSendPermission() && !player.hasPermission("gchat.send")) {
 
             // if the message should be passed through when the player doesn't have the permission
-            if (plugin.getConfig().isRequirePermissionPassthrough()) {
+            if (config.isRequirePermissionPassthrough()) {
                 // just return. the default behaviour is for the message to be passed to the backend.
                 return;
             }
@@ -151,7 +146,7 @@ public class GChatListener {
             // they don't have permission, and the message shouldn't be passed to the backend.
             e.setResult(PlayerChatEvent.ChatResult.denied());
 
-            Component failMessage = plugin.getConfig().getRequireSendPermissionFailMessage();
+            Component failMessage = config.getRequireSendPermissionFailMessage();
             if (failMessage != null) {
                 player.sendMessage(failMessage);
             }
@@ -163,7 +158,7 @@ public class GChatListener {
 
         // couldn't find a format for the player
         if (format == null) {
-            if (!plugin.getConfig().isPassthrough()) {
+            if (!config.isPassthrough()) {
                 e.setResult(PlayerChatEvent.ChatResult.denied());
             }
 
@@ -237,17 +232,17 @@ public class GChatListener {
                 .build();
 
         GChatMessageFormedEvent formedEvent = new GChatMessageFormedEvent(player, format, playerMessage, message);
-        plugin.getProxy().getEventManager().fireAndForget(formedEvent);
+        proxy.getEventManager().fireAndForget(formedEvent);
 
-        if (plugin.getConfig().isLogChatGlobal()) {
+        if (config.isLogChatGlobal()) {
             plugin.getLogger().info(PlainTextComponentSerializer.plainText().serialize(message));
         }
 
         // send the message to online players
-        for (Player p : plugin.getProxy().getAllPlayers()) {
+        for (Player p : proxy.getAllPlayers()) {
             boolean cancelled = plugin.getConfig().isRequireReceivePermission() && !player.hasPermission("gchat.receive");
             GChatMessageSendEvent sendEvent = new GChatMessageSendEvent(player, p, format, playerMessage, cancelled);
-            plugin.getProxy().getEventManager().fire(sendEvent).join();
+            proxy.getEventManager().fire(sendEvent).join();
 
             if (!sendEvent.getResult().isAllowed()) {
                 continue;
@@ -259,6 +254,87 @@ public class GChatListener {
                 p.sendMessage(player, message);
             }
         }
+    }
+
+    /**
+     * Send to all players
+     */
+    public void broadcastMessage(TextComponent message) {
+
+        ProxyServer proxy = plugin.getProxy();
+
+        for (Player p : proxy.getAllPlayers()) {
+            p.sendMessage(message);
+        }
+    }
+
+    /**
+     * Create a formatted message
+     */
+    public TextComponent createFormattedText(Player player, ChatFormat format, String message) {
+        return this.createFormattedText(player, null, format, message);
+    }
+
+    /**
+     * Create a formatted message
+     */
+    public TextComponent createFormattedText(Player player, RegisteredServer server, ChatFormat format, String message) {
+
+        // get the actual message format, and apply replacements.
+        String formatText = format.getFormatText();
+        formatText = plugin.replacePlaceholders(player, formatText);
+
+        // get any hover text, and apply replacements.
+        String hover = format.getHoverText();
+        hover = plugin.replacePlaceholders(player, hover);
+
+        // get the click event type, and the value if present.
+        ClickEvent.Action clickType = format.getClickType();
+        String clickValue = format.getClickValue();
+        if (clickType != null) {
+            clickValue = plugin.replacePlaceholders(player, clickValue);
+        }
+
+        // apply the players message to the chat format
+        formatText = formatText.replace("{message}", message);
+
+        if (server != null) {
+            ServerInfo info = server.getServerInfo();
+
+            if (info != null) {
+                formatText = formatText.replace("{server}", info.getName());
+
+                if (clickValue != null) {
+                    clickValue = clickValue.replace("{server}", info.getName());
+                }
+
+                if (hover != null) {
+                    hover = hover.replace("{server}", info.getName());
+                }
+            }
+        }
+
+        // apply any hover events
+        HoverEvent<Component> hoverEvent = hover == null ? null : HoverEvent.showText(LegacyComponentSerializer.legacyAmpersand().deserialize(hover));
+        ClickEvent clickEvent = clickType == null ? null : ClickEvent.clickEvent(clickType, clickValue);
+
+        // convert the format to a message
+        TextComponent result = legacyLinkingSerializer
+            .deserialize(formatText)
+            .toBuilder()
+            .applyDeep(m -> {
+                Component mComponent = m.build();
+
+                if (hoverEvent != null && mComponent.hoverEvent() == null) {
+                    m.hoverEvent(hoverEvent);
+                }
+                if (clickEvent != null && mComponent.clickEvent() == null) {
+                    m.clickEvent(clickEvent);
+                }
+            })
+            .build();
+
+        return result;
     }
 
 }

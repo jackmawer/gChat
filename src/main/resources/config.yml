@@ -26,8 +26,56 @@ require-permission:
 # Defines the formats to be used.
 formats:
 
+  # A login format
+  everyone-login:
+    type: "login"
+    check-permission: false
+    format: "{luckperms_prefix}{name}{luckperms_suffix} &ehas logged on to the network"
+    format-extra:
+
+      # the format for the message tooltip
+      hover: "AKA {display_name}"
+
+      # what should happen when the message is clicked?
+      click:
+
+        # type: can be either "none", "suggest_command", "run_command" or "open_url"
+        type: "none"
+
+        # the value to suggest or run.
+        value: ""
+
+  # A server-join format
+  everyone-join:
+    type: "join"
+    check-permission: false
+    format: "{luckperms_prefix}{name}{luckperms_suffix} &ehas joined the {server} server"
+    format-extra:
+
+      # the format for the message tooltip
+      hover: "Click to join {display_name} on the {server} server"
+
+      # what should happen when the message is clicked?
+      click:
+
+        # type: can be either "none", "suggest_command", "run_command" or "open_url"
+        type: "suggest_command"
+
+        # the value to suggest or run.
+        value: "/server {server}"
+
+  # A logout format
+  everyone-logout:
+    type: "logout"
+    check-permission: false
+    format: "{luckperms_prefix}{name}{luckperms_suffix} &ehas logged out of the network"
+
+
   # a default format for everyone on the server
   everyone:
+
+    # This is a chat-format
+    type: "chat"
 
     # the priority of the format. higher number = higher priority.
     # if a user has permission for multiple formats, the one with the highest priority will be used.

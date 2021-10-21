@@ -43,12 +43,14 @@ public class ChatFormat {
     private final String hoverText;
     private final ClickEvent.Action clickType;
     private final String clickValue;
+    private final String type;
 
     public ChatFormat(String id, ConfigurationNode c) {
         this.id = id;
         this.priority = c.getNode("priority").getInt(0);
         this.checkPermission = c.getNode("check-permission").getBoolean(true);
         this.formatText = getStringNonNull(c, "format");
+        this.type = c.getNode("type").getString("chat");
 
         String currentHoverText = null;
         ClickEvent.Action currentClickType = null;
@@ -90,6 +92,7 @@ public class ChatFormat {
         this.hoverText = hoverText;
         this.clickType = clickType;
         this.clickValue = clickValue;
+        this.type = "chat";
     }
 
     public boolean canUse(Player player) {
@@ -111,6 +114,10 @@ public class ChatFormat {
 
     public int getPriority() {
         return this.priority;
+    }
+
+    public String getType() {
+        return this.type;
     }
 
     public boolean isCheckPermission() {

@@ -184,8 +184,18 @@ public class GChatPlugin implements GChatApi {
 
     @Override
     public Optional<ChatFormat> getFormat(Player player) {
+        return this.getFormat(player, "chat");
+    }
+
+    public Optional<ChatFormat> getFormat(Player player, String type) {
         return config.getFormats().stream()
-                .filter(f -> f.canUse(player))
+                .filter(f -> {
+                    if (!f.canUse(player)) {
+                        return false;
+                    }
+
+                    return f.getType().equals(type);
+                })
                 .findFirst();
     }
 
