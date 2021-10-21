@@ -26,9 +26,6 @@
 package me.lucko.gchat.api;
 
 import com.velocitypowered.api.proxy.Player;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.ToString;
 import net.kyori.adventure.text.event.ClickEvent;
 import ninja.leaping.configurate.ConfigurationNode;
 
@@ -37,9 +34,6 @@ import static me.lucko.gchat.config.GChatConfig.getStringNonNull;
 /**
  * Represents a chat format
  */
-@Getter
-@ToString
-@AllArgsConstructor
 public class ChatFormat {
 
     private final String id;
@@ -56,15 +50,15 @@ public class ChatFormat {
         this.checkPermission = c.getNode("check-permission").getBoolean(true);
         this.formatText = getStringNonNull(c, "format");
 
-        String hoverText = null;
-        ClickEvent.Action clickType = null;
-        String clickValue = null;
+        String currentHoverText = null;
+        ClickEvent.Action currentClickType = null;
+        String currentClickValue = null;
 
         ConfigurationNode extra = c.getNode("format-extra");
         if (!extra.isVirtual()) {
             String hover = extra.getNode("hover").getString();
             if (hover != null && !hover.isEmpty()) {
-                hoverText = hover;
+                currentHoverText = hover;
             }
 
             ConfigurationNode click = extra.getNode("click");
@@ -77,12 +71,22 @@ public class ChatFormat {
                         throw new IllegalArgumentException("Invalid click type: " + type);
                     }
 
-                    clickType = ClickEvent.Action.valueOf(type.toUpperCase());
-                    clickValue = value;
+                    currentClickType = ClickEvent.Action.valueOf(type.toUpperCase());
+                    currentClickValue = value;
                 }
             }
         }
 
+        this.hoverText = currentHoverText;
+        this.clickType = currentClickType;
+        this.clickValue = currentClickValue;
+    }
+
+    public ChatFormat(String id, int priority, boolean checkPermission, String formatText, String hoverText, ClickEvent.Action clickType, String clickValue) {
+        this.id = id;
+        this.priority = priority;
+        this.checkPermission = checkPermission;
+        this.formatText = formatText;
         this.hoverText = hoverText;
         this.clickType = clickType;
         this.clickValue = clickValue;
@@ -92,4 +96,35 @@ public class ChatFormat {
         return !checkPermission || player.hasPermission("gchat.format." + id);
     }
 
+    public String getId() {
+        return this.id;
+    }
+
+    public int getPriority() {
+        return this.priority;
+    }
+
+    public boolean isCheckPermission() {
+        return this.checkPermission;
+    }
+
+    public String getFormatText() {
+        return this.formatText;
+    }
+
+    public String getHoverText() {
+        return this.hoverText;
+    }
+
+    public ClickEvent.Action getClickType() {
+        return this.clickType;
+    }
+
+    public String getClickValue() {
+        return this.clickValue;
+    }
+
+    public String toString() {
+        return "ChatFormat(id=" + this.getId() + ", priority=" + this.getPriority() + ", checkPermission=" + this.isCheckPermission() + ", formatText=" + this.getFormatText() + ", hoverText=" + this.getHoverText() + ", clickType=" + this.getClickType() + ", clickValue=" + this.getClickValue() + ")";
+    }
 }

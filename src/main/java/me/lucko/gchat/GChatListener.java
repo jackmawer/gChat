@@ -38,7 +38,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import java.util.regex.Pattern;
 
@@ -151,7 +151,7 @@ public class GChatListener {
         plugin.getProxy().getEventManager().fireAndForget(formedEvent);
 
         if (plugin.getConfig().isLogChatGlobal()) {
-            plugin.getLogger().info(PlainComponentSerializer.plain().serialize(message));
+            plugin.getLogger().info(PlainTextComponentSerializer.plainText().serialize(message));
         }
 
         // send the message to online players
