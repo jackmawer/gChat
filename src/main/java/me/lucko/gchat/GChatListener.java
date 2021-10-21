@@ -27,8 +27,13 @@ package me.lucko.gchat;
 
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.connection.DisconnectEvent;
+import com.velocitypowered.api.event.connection.LoginEvent;
 import com.velocitypowered.api.event.player.PlayerChatEvent;
+import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
+import com.velocitypowered.api.proxy.server.ServerInfo;
 import me.lucko.gchat.api.ChatFormat;
 import me.lucko.gchat.api.events.GChatEvent;
 import me.lucko.gchat.api.events.GChatMessageFormedEvent;
@@ -37,6 +42,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
@@ -58,6 +64,70 @@ public class GChatListener {
     }
 
     @Subscribe(order = PostOrder.NORMAL)
+    public void onJoin(LoginEvent e) {
+        Player player = e.getPlayer();
+
+        System.out.println("Player " + player + " joined the network");
+
+        TextComponent message = Component.text(player.getUsername()).color(NamedTextColor.AQUA)
+                .append(Component.text(" has logged on to the Blackblock.rocks network").color(NamedTextColor.YELLOW));
+
+        // send the message to online players
+        for (Player p : plugin.getProxy().getAllPlayers()) {
+
+            if (player.getUniqueId().equals(p.getUniqueId())) {
+                // Don't send it to ourselves (probably wont be in this group anyway)
+            } else {
+                p.sendMessage(player, message);
+            }
+        }
+    }
+
+    @Subscribe(order = PostOrder.NORMAL)
+    public void onJoinServer(ServerConnectedEvent e) {
+        Player player = e.getPlayer();
+        RegisteredServer server = e.getServer();
+        ServerInfo info = server.getServerInfo();
+
+        System.out.println("Player " + player + " joined server: " + info.getName());
+
+        TextComponent message = Component.text(player.getUsername()).color(NamedTextColor.AQUA)
+                .append(Component.text(" has joined the " + info.getName() + " server").color(NamedTextColor.YELLOW));
+
+        // send the message to online players
+        for (Player p : plugin.getProxy().getAllPlayers()) {
+
+            if (player.getUniqueId().equals(p.getUniqueId())) {
+                // No need to send the disconnect message to the user disconnecting
+                p.sendMessage(player, message);
+            } else {
+                p.sendMessage(player, message);
+            }
+        }
+
+    }
+
+    @Subscribe(order = PostOrder.NORMAL)
+    public void onLogout(DisconnectEvent e) {
+        Player player = e.getPlayer();
+
+        System.out.println("Player " + player + " exited the network");
+
+        TextComponent message = Component.text(player.getUsername()).color(NamedTextColor.AQUA)
+                .append(Component.text(" has logged out of the Blackblock.rocks network").color(NamedTextColor.YELLOW));
+
+        // send the message to online players
+        for (Player p : plugin.getProxy().getAllPlayers()) {
+
+            if (player.getUniqueId().equals(p.getUniqueId())) {
+                // No need to send the disconnect message to the user disconnecting
+            } else {
+                p.sendMessage(player, message);
+            }
+        }
+    }
+
+    @Subscribe(order = PostOrder.NORMAL)
     public void onChat(PlayerChatEvent e) {
         Player player = e.getPlayer();
 
@@ -67,7 +137,7 @@ public class GChatListener {
         if (!gChatEvent.getResult().isAllowed()) {
             return;
         }
-
+        
         // are permissions required to send chat messages?
         // does the player have perms to send the message
         if (plugin.getConfig().isRequireSendPermission() && !player.hasPermission("gchat.send")) {
