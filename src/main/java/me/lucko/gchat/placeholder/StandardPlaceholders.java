@@ -26,6 +26,7 @@
 package me.lucko.gchat.placeholder;
 
 import com.velocitypowered.api.proxy.Player;
+import me.lucko.gchat.GChatPlayer;
 import me.lucko.gchat.api.Placeholder;
 
 public class StandardPlaceholders implements Placeholder {
@@ -39,19 +40,38 @@ public class StandardPlaceholders implements Placeholder {
             return Boolean.toString(player.hasPermission(perm));
         }
 
+        String result = null;
+
         // static placeholders
         switch (definition.toLowerCase()) {
             case "username":
+                return player.getUsername();
             case "name":
             case "display_username": // Velocity doesn't have display names
             case "display_name":
-                return player.getUsername();
+                result = GChatPlayer.get(player).getDisplayName();
+                break;
             case "server_name":
                 return player.getCurrentServer().get().getServerInfo().getName();
             case "uuid":
                 return player.getUniqueId().toString();
+            case "pronouns":
+                result = GChatPlayer.get(player).getPronouns();
+                break;
+            case "timezone":
+                result = GChatPlayer.get(player).getTimezone();
+                break;
+            case "now":
+                result = GChatPlayer.get(player).getCurrentTime();
+                break;
             default:
                 return null;
         }
+
+        if (result == null) {
+            result = "";
+        }
+
+        return result;
     }
 }

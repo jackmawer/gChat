@@ -27,6 +27,7 @@ package me.lucko.gchat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
+import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyReloadEvent;
@@ -41,6 +42,9 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import me.lucko.gchat.api.ChatFormat;
 import me.lucko.gchat.api.GChatApi;
 import me.lucko.gchat.api.Placeholder;
+import me.lucko.gchat.commands.NicknameCommand;
+import me.lucko.gchat.commands.PronounsCommand;
+import me.lucko.gchat.commands.TimezoneCommand;
 import me.lucko.gchat.config.GChatConfig;
 import me.lucko.gchat.hooks.LuckPermsHook;
 import me.lucko.gchat.hooks.NeutronN3FSHook;
@@ -123,8 +127,19 @@ public class GChatPlugin implements GChatApi {
         // register chat listener
         proxy.getEventManager().register(this, new GChatListener(this));
 
+        CommandManager commandManager = proxy.getCommandManager();
+
         // register command
-        proxy.getCommandManager().register("gchat", new GChatCommand(this), "globalchat");
+        commandManager.register("gchat", new GChatCommand(this), "globalchat");
+
+        // register the timezone command
+        commandManager.register("timezone", new TimezoneCommand());
+
+        // register the pronouns command
+        commandManager.register("pronouns", new PronounsCommand());
+
+        // register the nickname command
+        commandManager.register("nickname", new NicknameCommand());
 
         // init api singleton
         GChat.setApi(this);
