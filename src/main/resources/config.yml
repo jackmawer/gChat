@@ -23,6 +23,28 @@ require-permission:
   # if a player doesn't have permission to send a message, should it be passed through to the backend server?
   passthrough: true
 
+# Tablist
+tablist:
+  header:
+    - ''
+    - '  &8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬[ &bMy Server Name &8]&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬  '
+    - ''
+    - '&7Players online: &b{playercount}'
+    - ''
+  footer:
+    - ''
+    - '  &8▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬[ &bServer info &8]&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬  '
+    - ''
+    - '&7TPS: &b{tps} &8| &7MSPT: &b{mspt}'
+    - '&7Date: &b{server_date} &8| &7Time: &b{server_time}'
+    - ''
+    - '&7NZ: &b{local_time_NZ} &8| &7EU: &b{local_time_CET} &8| &7NY: &b{local_time_EST} &8| &7LA: &b{local_time_PST}'
+    - ''
+    - '  &8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬▬  '
+    - ''
+    - '&7Your Ping: &b{ping}'
+    - ''
+
 # Defines the formats to be used.
 formats:
 

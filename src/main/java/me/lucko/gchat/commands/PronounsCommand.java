@@ -41,6 +41,11 @@ public class PronounsCommand implements SimpleCommand {
 
         String pronouns = args[0];
 
+        if (!this.getPronouns().contains(pronouns)) {
+            source.sendMessage(Component.text("Please contact Skerit to set your custom pronouns!").color(NamedTextColor.RED));
+            return;
+        }
+
         GChatPlayer gChatPlayer = GChatPlayer.get(player);
         gChatPlayer.setPronouns(pronouns);
 

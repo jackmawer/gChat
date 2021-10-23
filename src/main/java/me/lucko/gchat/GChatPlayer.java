@@ -1,6 +1,7 @@
 package me.lucko.gchat;
 
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ServerConnection;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
@@ -151,6 +152,48 @@ public class GChatPlayer {
         }
 
         luckperms.getUserManager().saveUser(user);
+    }
+
+    /**
+     * Get this player's server
+     */
+    public ServerConnection getServer() {
+        return this.player.getCurrentServer().orElse(null);
+    }
+
+    /**
+     * Get the MSPT of the server this player is on
+     */
+    public float getMSPT() {
+
+        ServerConnection server = this.getServer();
+
+        if (server == null) {
+            return 0f;
+        }
+
+        return GChatPlugin.instance.getServerMSPT(server);
+    }
+
+    /**
+     * Get the TPS of the server this player is on
+     */
+    public float getTPS() {
+
+        ServerConnection server = this.getServer();
+
+        if (server == null) {
+            return 20f;
+        }
+
+        return GChatPlugin.instance.getServerTPS(server);
+    }
+
+    /**
+     * Get the ping of this player as a string
+     */
+    public String getPingString() {
+        return "" + this.player.getPing();
     }
 
     public static GChatPlayer get(Player player) {

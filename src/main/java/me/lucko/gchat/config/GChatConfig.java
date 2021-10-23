@@ -26,6 +26,7 @@
 package me.lucko.gchat.config;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.TypeToken;
 import me.lucko.gchat.GChatPlugin;
 import me.lucko.gchat.api.ChatFormat;
 import net.kyori.adventure.text.Component;
@@ -35,6 +36,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -51,6 +53,9 @@ public class GChatConfig {
     private final boolean logChatGlobal;
     private final List<ChatFormat> formats;
     private final Style linkStyle;
+    private final String tablist_header;
+    private final String tablist_footer;
+    private final Boolean has_tablist_config;
 
     public GChatConfig(ConfigurationNode c) {
         this.passthrough = c.getNode("passthrough").getBoolean(true);
@@ -60,6 +65,24 @@ public class GChatConfig {
         ConfigurationNode requirePermission = c.getNode("require-permission");
         if (requirePermission.isVirtual()) {
             throw new IllegalArgumentException("Missing section: require-permission");
+        }
+
+        ConfigurationNode tablist = c.getNode("tablist");
+
+        if (!tablist.isEmpty()) {
+
+            this.tablist_header = this.getLinesAsString(tablist.getNode("header"));
+            this.tablist_footer = this.getLinesAsString(tablist.getNode("footer"));
+
+            if (this.tablist_header != null || this.tablist_footer != null) {
+                this.has_tablist_config = true;
+            } else {
+                this.has_tablist_config = false;
+            }
+        } else {
+            this.tablist_header = null;
+            this.tablist_footer = null;
+            this.has_tablist_config = false;
         }
 
         this.requireSendPermission = requirePermission.getNode("send").getBoolean(false);
@@ -114,6 +137,39 @@ public class GChatConfig {
         }
 
         return ret;
+    }
+
+    private String getLinesAsString(ConfigurationNode node) {
+
+        if (node.isEmpty()) {
+            return null;
+        }
+
+        if (node.isList()) {
+
+            try {
+                List<String> list = node.getList(new TypeToken<String>() {});
+                return String.join("\n", list);
+            } catch (Exception e) {
+                // Ignore
+                return null;
+            }
+
+        } else {
+            return node.getString("");
+        }
+    }
+
+    public boolean hasTablistConfig() {
+        return this.has_tablist_config;
+    }
+
+    public String getTablistHeader() {
+        return this.tablist_header;
+    }
+
+    public String getTablistFooter() {
+        return this.tablist_footer;
     }
 
     public boolean isPassthrough() {

@@ -31,6 +31,9 @@ import me.lucko.gchat.api.Placeholder;
 
 public class StandardPlaceholders implements Placeholder {
 
+    private static final String TPS_FORMAT = "%.1f";
+    private static final String MSPT_FORMAT = "%.1f";
+
     @Override
     public String getReplacement(Player player, String definition) {
 
@@ -58,11 +61,28 @@ public class StandardPlaceholders implements Placeholder {
             case "pronouns":
                 result = GChatPlayer.get(player).getPronouns();
                 break;
+            case "pronouns_suffix":
+                result = GChatPlayer.get(player).getPronouns();
+
+                if (result != null && !result.isBlank()) {
+                    result = " (" + result + ")";
+                }
+
+                break;
             case "timezone":
                 result = GChatPlayer.get(player).getTimezone();
                 break;
             case "now":
                 result = GChatPlayer.get(player).getCurrentTime();
+                break;
+            case "mspt":
+                result = String.format(MSPT_FORMAT, GChatPlayer.get(player).getMSPT());
+                break;
+            case "tps":
+                result = String.format(TPS_FORMAT, GChatPlayer.get(player).getTPS());
+                break;
+            case "ping":
+                result = GChatPlayer.get(player).getPingString();
                 break;
             default:
                 return null;
