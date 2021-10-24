@@ -26,6 +26,8 @@
 package me.lucko.gchat;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.event.Subscribe;
@@ -67,6 +69,10 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
@@ -172,7 +178,7 @@ public class GChatPlugin implements GChatApi {
         this.tab_list = new GChatTabList(this, proxy);
         proxy.getEventManager().register(this, this.tab_list);
 
-        Timer timer = new Timer();
+        Timer timer = new Timer(true);
         timer.scheduleAtFixedRate(new TimerHook(), 1000, 1000);
 
         // init api singleton
@@ -402,5 +408,95 @@ public class GChatPlugin implements GChatApi {
         }
 
         return 20f;
+    }
+
+    /**
+     * Should events be pushed to a remote serveR?
+     */
+    public static boolean shouldPushEvents() {
+
+        if (instance == null) {
+            return false;
+        }
+
+        return instance.getConfig().shouldPushEvents();
+    }
+
+    /**
+     * Get the remote endpoint for events
+     */
+    public static URI getPushEndpoint() {
+
+        if (instance == null) {
+            return null;
+        }
+
+        return instance.getConfig().getPushEndpoint();
+    }
+
+    /**
+     * Create an object
+     */
+    public static JsonObject createObject(String type) {
+        JsonObject result = new JsonObject();
+        result.addProperty("type", type);
+        return result;
+    }
+
+    /**
+     * Create an object with player data
+     */
+    public static JsonObject createObject(String type, Player player) {
+        JsonObject result = createObject(type);
+
+        JsonObject player_obj = new JsonObject();
+
+        player_obj.addProperty("uuid", player.getUniqueId().toString());
+        player_obj.addProperty("username", player.getUsername());
+        player_obj.addProperty("ping", player.getPing());
+
+        ServerConnection connection = player.getCurrentServer().orElse(null);
+
+        if (connection != null) {
+            player_obj.addProperty("server", connection.getServer().getServerInfo().getName());
+        }
+
+        result.add("player", player_obj);
+
+        return result;
+    }
+
+    /**
+     * Push the given object to the endpoint
+     */
+    public static void pushEvent(JsonObject data) {
+
+        if (data == null || instance == null || !shouldPushEvents()) {
+            return;
+        }
+
+        try {
+            _pushEvent(data);
+        } catch (Exception e) {
+            // Ignore
+        }
+    }
+
+    private static void _pushEvent(JsonObject data) {
+
+        URI uri = getPushEndpoint();
+
+        if (uri == null) {
+            return;
+        }
+
+        String body = (new Gson()).toJson(data);
+
+        HttpRequest request = HttpRequest.newBuilder(uri)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+
+        HttpClient.newHttpClient().sendAsync(request, HttpResponse.BodyHandlers.discarding());
     }
 }

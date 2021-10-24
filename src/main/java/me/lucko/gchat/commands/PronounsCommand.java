@@ -1,9 +1,11 @@
 package me.lucko.gchat.commands;
 
+import com.google.gson.JsonObject;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import me.lucko.gchat.GChatPlayer;
+import me.lucko.gchat.GChatPlugin;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -48,6 +50,12 @@ public class PronounsCommand implements SimpleCommand {
 
         GChatPlayer gChatPlayer = GChatPlayer.get(player);
         gChatPlayer.setPronouns(pronouns);
+
+        if (GChatPlugin.shouldPushEvents()) {
+            JsonObject object = GChatPlugin.createObject("pronouns", player);
+            object.addProperty("pronouns", pronouns);
+            GChatPlugin.pushEvent(object);
+        }
 
         source.sendMessage(Component.text("Your pronouns have been set to " + pronouns).color(NamedTextColor.AQUA));
     }

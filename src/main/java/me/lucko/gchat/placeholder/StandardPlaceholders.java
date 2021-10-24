@@ -26,6 +26,7 @@
 package me.lucko.gchat.placeholder;
 
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ServerConnection;
 import me.lucko.gchat.GChatPlayer;
 import me.lucko.gchat.api.Placeholder;
 
@@ -55,7 +56,13 @@ public class StandardPlaceholders implements Placeholder {
                 result = GChatPlayer.get(player).getDisplayName();
                 break;
             case "server_name":
-                return player.getCurrentServer().get().getServerInfo().getName();
+                ServerConnection connection = player.getCurrentServer().orElse(null);
+
+                if (connection == null) {
+                    return "unknown";
+                }
+
+                return connection.getServerInfo().getName();
             case "uuid":
                 return player.getUniqueId().toString();
             case "pronouns":

@@ -1,12 +1,16 @@
 package me.lucko.gchat.commands;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonObject;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import me.lucko.gchat.GChatPlayer;
+import me.lucko.gchat.GChatPlugin;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.NBTComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.*;
 
@@ -46,23 +50,38 @@ public class NicknameCommand implements SimpleCommand {
             return;
         }
 
-        String nickname = args[0];
+        String original_nickname = args[0];
+        String nickname = original_nickname;
+        String color_name = null;
 
         GChatPlayer gChatPlayer = GChatPlayer.get(player);
         gChatPlayer.setNickname(nickname);
 
         if (args.length == 2) {
-            String color_name = args[1];
+            color_name = args[1];
             String code = getKey(color_name, COLORS);
 
-            System.out.println("Color " + color_name + " == " + code);
-
-            gChatPlayer.setNicknameColor(code);
-
-            nickname = code + nickname;
+            if (code == null) {
+                color_name = null;
+                gChatPlayer.setNicknameColor(null);
+            } else {
+                gChatPlayer.setNicknameColor(code);
+                nickname = code + nickname;
+            }
         }
 
-        source.sendMessage(Component.text("Your nickname has been set to " + nickname).color(NamedTextColor.AQUA));
+        if (GChatPlugin.shouldPushEvents()) {
+            JsonObject object = GChatPlugin.createObject("nickname", player);
+            object.addProperty("nickname", nickname);
+            object.addProperty("color", color_name);
+            GChatPlugin.pushEvent(object);
+        }
+
+        LegacyComponentSerializer legacy = LegacyComponentSerializer.legacyAmpersand();
+        Component success = Component.text("Your nickname has been set to ").color(NamedTextColor.AQUA);
+        success = success.append(legacy.deserialize(nickname));
+
+        source.sendMessage(success);
     }
 
     public static String getKey(String value, Map<String, String> map) {

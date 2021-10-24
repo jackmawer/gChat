@@ -37,6 +37,7 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -56,11 +57,37 @@ public class GChatConfig {
     private final String tablist_header;
     private final String tablist_footer;
     private final Boolean has_tablist_config;
+    private final Boolean push_events;
+    private final URI push_event_endpoint;
 
     public GChatConfig(ConfigurationNode c) {
         this.passthrough = c.getNode("passthrough").getBoolean(true);
 
         this.logChatGlobal = c.getNode("log-chat-global").getBoolean(true);
+
+        ConfigurationNode push_events = c.getNode("push-events");
+
+        if (!push_events.isVirtual()) {
+            Boolean enabled = push_events.getNode("enabled").getBoolean(false);
+
+            if (enabled) {
+                String endpoint = push_events.getNode("endpoint").getString();
+
+                if (endpoint == null || endpoint.isBlank()) {
+                    enabled = false;
+                    this.push_event_endpoint = null;
+                } else {
+                    this.push_event_endpoint = URI.create(endpoint);
+                }
+            } else {
+                this.push_event_endpoint = null;
+            }
+
+            this.push_events = enabled;
+        } else {
+            this.push_events = false;
+            this.push_event_endpoint = null;
+        }
 
         ConfigurationNode requirePermission = c.getNode("require-permission");
         if (requirePermission.isVirtual()) {
@@ -137,6 +164,19 @@ public class GChatConfig {
         }
 
         return ret;
+    }
+
+    public boolean shouldPushEvents() {
+        return this.push_events;
+    }
+
+    public URI getPushEndpoint() {
+
+        if (!this.push_events) {
+            return null;
+        }
+
+        return this.push_event_endpoint;
     }
 
     private String getLinesAsString(ConfigurationNode node) {

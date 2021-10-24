@@ -25,6 +25,7 @@
 
 package me.lucko.gchat;
 
+import com.google.gson.JsonObject;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
@@ -73,6 +74,11 @@ public class GChatListener {
     public void onLogin(LoginEvent e) {
         Player player = e.getPlayer();
 
+        if (GChatPlugin.shouldPushEvents()) {
+            JsonObject object = GChatPlugin.createObject("login", player);
+            GChatPlugin.pushEvent(object);
+        }
+
         ChatFormat format = plugin.getFormat(player, "login").orElse(null);
 
         if (format == null) {
@@ -90,6 +96,11 @@ public class GChatListener {
         RegisteredServer server = e.getServer();
         ServerInfo info = server.getServerInfo();
 
+        if (GChatPlugin.shouldPushEvents()) {
+            JsonObject object = GChatPlugin.createObject("join", player);
+            GChatPlugin.pushEvent(object);
+        }
+
         ChatFormat format = plugin.getFormat(player, "join").orElse(null);
 
         if (format == null) {
@@ -104,6 +115,11 @@ public class GChatListener {
     @Subscribe(order = PostOrder.NORMAL)
     public void onLogout(DisconnectEvent e) {
         Player player = e.getPlayer();
+
+        if (GChatPlugin.shouldPushEvents()) {
+            JsonObject object = GChatPlugin.createObject("logout", player);
+            GChatPlugin.pushEvent(object);
+        }
 
         ChatFormat format = plugin.getFormat(player, "logout").orElse(null);
 

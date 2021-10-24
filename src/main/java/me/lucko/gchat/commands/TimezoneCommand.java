@@ -1,10 +1,12 @@
 package me.lucko.gchat.commands;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonObject;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import me.lucko.gchat.GChatPlayer;
+import me.lucko.gchat.GChatPlugin;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
 import me.xdrop.fuzzywuzzy.model.ExtractedResult;
 import net.kyori.adventure.text.Component;
@@ -44,6 +46,12 @@ public class TimezoneCommand implements SimpleCommand {
 
         GChatPlayer gChatPlayer = GChatPlayer.get(player);
         gChatPlayer.setTimezone(timezone);
+
+        if (GChatPlugin.shouldPushEvents()) {
+            JsonObject object = GChatPlugin.createObject("timezone", player);
+            object.addProperty("timezone", timezone);
+            GChatPlugin.pushEvent(object);
+        }
 
         source.sendMessage(Component.text("Your timezone has been set to " + timezone).color(NamedTextColor.AQUA));
     }

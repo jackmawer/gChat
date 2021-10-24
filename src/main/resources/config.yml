@@ -23,6 +23,11 @@ require-permission:
   # if a player doesn't have permission to send a message, should it be passed through to the backend server?
   passthrough: true
 
+# Send data to an external service?
+push-events:
+  enabled: false
+  endpoint: 'https://my.server.com'
+
 # Tablist
 tablist:
   header:
@@ -34,6 +39,8 @@ tablist:
   footer:
     - ''
     - '  &8▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬[ &bServer info &8]&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬▬&8▬▬▬▬▬▬▬  '
+    - ''
+    - '&7Connected to: &b{server_name}'
     - ''
     - '&7TPS: &b{tps} &8| &7MSPT: &b{mspt}'
     - '&7Date: &b{server_date} &8| &7Time: &b{server_time}'

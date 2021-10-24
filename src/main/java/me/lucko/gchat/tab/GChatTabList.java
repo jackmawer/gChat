@@ -1,15 +1,20 @@
 package me.lucko.gchat.tab;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.player.TabList;
 import com.velocitypowered.api.proxy.player.TabListEntry;
 import me.lucko.gchat.GChatPlugin;
 import me.lucko.gchat.config.GChatConfig;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.*;
@@ -23,6 +28,7 @@ public class GChatTabList {
 
     private String tablist_header = null;
     private String tablist_footer = null;
+    private int update_counter = 0;
 
     public GChatTabList(GChatPlugin plugin, ProxyServer proxy_server) {
         this.proxy_server = proxy_server;
@@ -67,13 +73,61 @@ public class GChatTabList {
     public void update() {
         this.updatePlayers();
         this.updateHeaderAndFooter();
+
+        this.update_counter++;
+
+        // Send the playerlist every 2 minutes
+        if (this.update_counter > 120) {
+            this.sendPlayerList();
+            this.update_counter = 0;
+        }
     }
 
-    public void updatePlayers() {
+    /**
+     * Send the playerlist to the remote endpoint
+     */
+    public void sendPlayerList() {
+
+        if (!GChatPlugin.shouldPushEvents()) {
+            return;
+        }
+
+        JsonObject event_data = GChatPlugin.createObject("players");
+        JsonArray event_list = new JsonArray();
+
+        for (Player player : this.proxy_server.getAllPlayers()) {
+
+            ServerConnection connection = player.getCurrentServer().orElse(null);
+
+
+            JsonObject temp = GChatPlugin.createObject("list", player);
+            event_list.add(temp.getAsJsonObject("player"));
+        }
+
+        event_data.add("players", event_list);
+        GChatPlugin.pushEvent(event_data);
+    }
+
+    /**
+     * Update the players in the tablist
+     */
+    public Boolean updatePlayers() {
+
+        Boolean players_changed = false;
+        JsonObject event_data = null;
+        JsonArray event_list = null;
 
         LegacyComponentSerializer legacy = LegacyComponentSerializer.legacyAmpersand();
 
         for (Player player : this.proxy_server.getAllPlayers()) {
+
+            String current_server_name = null;
+
+            ServerConnection connection = player.getCurrentServer().orElse(null);
+
+            if (connection != null) {
+                current_server_name = connection.getServer().getServerInfo().getName();
+            }
 
             TabList tablist = player.getTabList();
 
@@ -95,15 +149,30 @@ public class GChatTabList {
 
             for (Player player1 : this.proxy_server.getAllPlayers()) {
                 if (!player.getTabList().containsEntry(player1.getUniqueId())) {
+                    players_changed = true;
 
-                    player.getTabList().addEntry(
-                            TabListEntry.builder()
-                                    .displayName(Component.text(player1.getUsername() + "»«_"))
-                                    .profile(player1.getGameProfile())
-                                    .gameMode(0) // Impossible to get player game mode from proxy, always assume survival
-                                    .tabList(player.getTabList())
-                                    .build()
-                    );
+                    Component display_name = Component.text(player1.getUsername());
+                    ServerConnection connection1 = player1.getCurrentServer().orElse(null);
+
+                    if (connection1 != null) {
+                        String server_name = connection1.getServer().getServerInfo().getName();
+
+                        if (!server_name.equals(current_server_name)) {
+                            display_name = display_name.append(Component.text(" (" + server_name + ")").style(Style.style(NamedTextColor.GRAY)));
+                        }
+                    }
+
+                    TabListEntry entry = TabListEntry.builder()
+                            // Setting a displayname here will only work if the players are on different servers
+                            //.displayName(display_name)
+                            .profile(player1.getGameProfile())
+                            .gameMode(0) // Impossible to get player game mode from proxy, always assume survival
+                            .tabList(player.getTabList())
+                            .build();
+
+                    entry.setDisplayName(display_name);
+
+                    player.getTabList().addEntry(entry);
                 }
 
                 /*
@@ -129,9 +198,12 @@ public class GChatTabList {
                     entry.setLatency((int) (player.getPing()));
                 } else {
                     player.getTabList().removeEntry(uuid);
+                    players_changed = true;
                 }
             }
         }
+
+        return players_changed;
     }
 
     public static void insertIntoTabListCleanly(TabList list, TabListEntry entry) {
