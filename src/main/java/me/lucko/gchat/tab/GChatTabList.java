@@ -10,6 +10,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.player.TabList;
 import com.velocitypowered.api.proxy.player.TabListEntry;
+import me.lucko.gchat.GChatPlayer;
 import me.lucko.gchat.GChatPlugin;
 import me.lucko.gchat.config.GChatConfig;
 import net.kyori.adventure.text.Component;
@@ -151,7 +152,7 @@ public class GChatTabList {
                 if (!player.getTabList().containsEntry(player1.getUniqueId())) {
                     players_changed = true;
 
-                    Component display_name = Component.text(player1.getUsername());
+                    Component display_name = Component.text(GChatPlayer.get(player).getDisplayName());
                     ServerConnection connection1 = player1.getCurrentServer().orElse(null);
 
                     if (connection1 != null) {

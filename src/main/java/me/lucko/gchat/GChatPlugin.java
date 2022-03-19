@@ -249,12 +249,12 @@ public class GChatPlugin implements GChatApi {
                     break;
 
                 case "local_time_est":
-                    tz_time_format.setTimeZone(TimeZone.getTimeZone("EST"));
+                    tz_time_format.setTimeZone(TimeZone.getTimeZone("ET"));
                     replacement = tz_time_format.format(now);
                     break;
 
                 case "local_time_pst":
-                    tz_time_format.setTimeZone(TimeZone.getTimeZone("PST"));
+                    tz_time_format.setTimeZone(TimeZone.getTimeZone("PT"));
                     replacement = tz_time_format.format(now);
                     break;
             }
