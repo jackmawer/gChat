@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'uk.co.n3fs.mc'
-version = '3.0.0-SNAPSHOT'
+version = '3.0.1-SNAPSHOT'
 description = 'A simple global chat plugin for Velocity.'
 
 repositories {
@@ -17,6 +17,15 @@ repositories {
 
     maven {
         url 'https://ci.lucko.me/plugin/repository/everything/'
+    }
+
+    maven {
+        url 'https://repo.lucko.me/'
+    }
+
+    // // placeholders-common seems to have been removed from the lucko repo
+    flatDir {
+        dirs '../libs/'
     }
 
     maven {

@@ -14,6 +14,7 @@ import me.lucko.gchat.GChatPlayer;
 import me.lucko.gchat.GChatPlugin;
 import me.lucko.gchat.config.GChatConfig;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -72,8 +73,8 @@ public class GChatTabList {
     }
 
     public void update() {
-        this.updatePlayers();
         this.updateHeaderAndFooter();
+        this.updatePlayers();
 
         this.update_counter++;
 
@@ -114,24 +115,16 @@ public class GChatTabList {
      */
     public Boolean updatePlayers() {
 
-        Boolean players_changed = false;
-        JsonObject event_data = null;
-        JsonArray event_list = null;
+        boolean players_changed = false;
 
         LegacyComponentSerializer legacy = LegacyComponentSerializer.legacyAmpersand();
 
         for (Player player : this.proxy_server.getAllPlayers()) {
 
-            String current_server_name = null;
-
-            ServerConnection connection = player.getCurrentServer().orElse(null);
-
-            if (connection != null) {
-                current_server_name = connection.getServer().getServerInfo().getName();
-            }
-
+            // Get this player's tablist
             TabList tablist = player.getTabList();
 
+            // If a tablist header/footer is set, add it now
             if (this.tablist_header != null || this.tablist_footer != null) {
 
                 String header = "";
@@ -148,55 +141,44 @@ public class GChatTabList {
                 tablist.setHeaderAndFooter(legacy.deserialize(header), legacy.deserialize(footer));
             }
 
-            for (Player player1 : this.proxy_server.getAllPlayers()) {
-                if (!player.getTabList().containsEntry(player1.getUniqueId())) {
+            // Now iterate over all the other players
+            for (Player other_player : this.proxy_server.getAllPlayers()) {
+
+                // If this other_player is not in the tablist of the current player...
+                if (!tablist.containsEntry(other_player.getUniqueId())) {
                     players_changed = true;
 
-                    Component display_name = Component.text(GChatPlayer.get(player).getDisplayName());
-                    ServerConnection connection1 = player1.getCurrentServer().orElse(null);
-
-                    if (connection1 != null) {
-                        String server_name = connection1.getServer().getServerInfo().getName();
-
-                        if (!server_name.equals(current_server_name)) {
-                            display_name = display_name.append(Component.text(" (" + server_name + ")").style(Style.style(NamedTextColor.GRAY)));
-                        }
-                    }
+                    Component display_name = this.getPlayerTabDisplay(other_player, player);
 
                     TabListEntry entry = TabListEntry.builder()
                             // Setting a displayname here will only work if the players are on different servers
                             //.displayName(display_name)
-                            .profile(player1.getGameProfile())
+                            .profile(other_player.getGameProfile())
                             .gameMode(0) // Impossible to get player game mode from proxy, always assume survival
-                            .tabList(player.getTabList())
+                            .tabList(tablist)
                             .build();
 
                     entry.setDisplayName(display_name);
-
-                    player.getTabList().addEntry(entry);
+                    tablist.addEntry(entry);
                 }
-
-                /*
-                TabListEntry entry =         TabListEntry.builder()
-                                .displayName(Component.text(player1.getUsername() + "»«_"))
-                                .profile(player1.getGameProfile())
-                                .gameMode(0) // Impossible to get player game mode from proxy, always assume survival
-                                .tabList(player.getTabList())
-                                .build();
-
-                entry.setDisplayName(Component.text("Awel?"));
-
-                insertIntoTabListCleanly(player.getTabList(), entry);
-                */
-
             }
 
-            for (TabListEntry entry : player.getTabList().getEntries()) {
+            // Now iterate over all the tablist entries again!
+            for (TabListEntry entry : tablist.getEntries()) {
                 UUID uuid = entry.getProfile().getId();
+
+                // See if this player is still online
                 Optional<Player> playerOptional = proxy_server.getPlayer(uuid);
+
+                // If the player is still present, update it
                 if (playerOptional.isPresent()) {
+                    Player other_player = playerOptional.get();
+
                     // Update ping
-                    entry.setLatency((int) (player.getPing()));
+                    entry.setLatency((int) (other_player.getPing()));
+
+                    Component display_name = this.getPlayerTabDisplay(other_player, player);
+                    entry.setDisplayName(display_name);
                 } else {
                     player.getTabList().removeEntry(uuid);
                     players_changed = true;
@@ -205,6 +187,41 @@ public class GChatTabList {
         }
 
         return players_changed;
+    }
+
+    /**
+     * Construct a tablist Component entry for the given other_player
+     * meant to be inserted in current_player's tablist
+     *
+     * @param   other_player     The other player to create the entry for
+     * @param   current_player   The owner of the tablist
+     *
+     * @return  The constructed tablist entry
+     */
+    public Component getPlayerTabDisplay(Player other_player, Player current_player) {
+
+        LegacyComponentSerializer legacy = LegacyComponentSerializer.legacyAmpersand();
+
+        TextComponent display_name = legacy.deserialize(GChatPlayer.get(other_player).getDisplayName());
+
+        ServerConnection other_connection = other_player.getCurrentServer().orElse(null);
+
+        if (other_connection != null) {
+            String server_name = other_connection.getServer().getServerInfo().getName();
+
+            String current_server_name = null;
+            ServerConnection current_connection = current_player.getCurrentServer().orElse(null);
+
+            if (current_connection != null) {
+                current_server_name = current_connection.getServer().getServerInfo().getName();
+            }
+
+            if (!server_name.equals(current_server_name)) {
+                display_name = display_name.append(Component.text(" (" + server_name + ")").style(Style.style(NamedTextColor.GRAY)));
+            }
+        }
+
+        return display_name;
     }
 
     public static void insertIntoTabListCleanly(TabList list, TabListEntry entry) {
