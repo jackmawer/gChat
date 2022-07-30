@@ -200,9 +200,13 @@ public class GChatTabList {
      */
     public Component getPlayerTabDisplay(Player other_player, Player current_player) {
 
-        LegacyComponentSerializer legacy = LegacyComponentSerializer.legacyAmpersand();
+        GChatPlayer gplayer = GChatPlayer.get(other_player);
 
-        TextComponent display_name = legacy.deserialize(GChatPlayer.get(other_player).getDisplayName());
+        TextComponent display_name = gplayer.format("tab-entry", null);
+
+        if (display_name == null) {
+            return null;
+        }
 
         ServerConnection other_connection = other_player.getCurrentServer().orElse(null);
 

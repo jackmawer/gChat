@@ -47,9 +47,12 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class GChatListener {
@@ -93,6 +96,10 @@ public class GChatListener {
     @Subscribe(order = PostOrder.NORMAL)
     public void onJoinServer(ServerConnectedEvent e) {
         Player player = e.getPlayer();
+
+        // Force clear the cached player
+        GChatPlayer.remove(player);
+
         RegisteredServer server = e.getServer();
         ServerInfo info = server.getServerInfo();
 
@@ -122,6 +129,8 @@ public class GChatListener {
         }
 
         ChatFormat format = plugin.getFormat(player, "logout").orElse(null);
+
+        GChatPlayer.remove(player);
 
         if (format == null) {
             return;
@@ -170,10 +179,15 @@ public class GChatListener {
             return;
         }
 
-        ChatFormat format = plugin.getFormat(player).orElse(null);
+        GChatPlayer gplayer = GChatPlayer.get(player);
+
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("message", e.getMessage());
+
+        TextComponent outgoing_message = gplayer.format("chat", parameters);
 
         // couldn't find a format for the player
-        if (format == null) {
+        if (outgoing_message == null) {
             if (!config.isPassthrough()) {
                 e.setResult(PlayerChatEvent.ChatResult.denied());
             }
@@ -184,80 +198,22 @@ public class GChatListener {
         // we have a format, so cancel the event.
         e.setResult(PlayerChatEvent.ChatResult.denied());
 
-        // get the actual message format, and apply replacements.
-        String formatText = format.getFormatText();
-        formatText = plugin.replacePlaceholders(player, formatText);
+        parameters.put("message", "<aqua>" + e.getMessage());
+        TextComponent self_message = gplayer.format("chat", parameters);
 
-        // get any hover text, and apply replacements.
-        String hover = format.getHoverText();
-        hover = plugin.replacePlaceholders(player, hover);
+        ChatFormat format = plugin.getFormat(player, "chat").orElse(null);
 
-        // get the click event type, and the value if present.
-        ClickEvent.Action clickType = format.getClickType();
-        String clickValue = format.getClickValue();
-        if (clickType != null) {
-            clickValue = plugin.replacePlaceholders(player, clickValue);
-        }
-
-        // get the players message, and remove any color if they don't have permission for it.
-        String playerMessage = e.getMessage();
-        if (!player.hasPermission("gchat.color")) {
-            playerMessage = STRIP_COLOR_PATTERN.matcher(playerMessage).replaceAll("");
-        }
-
-        // Create text to send to ourselves
-        String self_text = formatText.replace("{message}", "&b" + playerMessage);
-
-        // apply the players message to the chat format
-        formatText = formatText.replace("{message}", playerMessage);
-
-        // apply any hover events
-        HoverEvent<Component> hoverEvent = hover == null ? null : HoverEvent.showText(LegacyComponentSerializer.legacyAmpersand().deserialize(hover));
-        ClickEvent clickEvent = clickType == null ? null : ClickEvent.clickEvent(clickType, clickValue);
-
-        // convert the format to a message
-        TextComponent message = legacyLinkingSerializer
-                .deserialize(formatText)
-                .toBuilder()
-                .applyDeep(m -> {
-                    Component mComponent = m.build();
-
-                    if (hoverEvent != null && mComponent.hoverEvent() == null) {
-                        m.hoverEvent(hoverEvent);
-                    }
-                    if (clickEvent != null && mComponent.clickEvent() == null) {
-                        m.clickEvent(clickEvent);
-                    }
-                })
-                .build();
-
-        // convert the format to a message
-        TextComponent self_message = legacyLinkingSerializer
-            .deserialize(self_text)
-            .toBuilder()
-                .applyDeep(m -> {
-                    Component mComponent = m.build();
-
-                    if (hoverEvent != null && mComponent.hoverEvent() == null) {
-                        m.hoverEvent(hoverEvent);
-                    }
-                    if (clickEvent != null && mComponent.clickEvent() == null) {
-                        m.clickEvent(clickEvent);
-                    }
-                })
-                .build();
-
-        GChatMessageFormedEvent formedEvent = new GChatMessageFormedEvent(player, format, playerMessage, message);
+        GChatMessageFormedEvent formedEvent = new GChatMessageFormedEvent(player, format, e.getMessage(), outgoing_message);
         proxy.getEventManager().fireAndForget(formedEvent);
 
         if (config.isLogChatGlobal()) {
-            plugin.getLogger().info(PlainTextComponentSerializer.plainText().serialize(message));
+            plugin.getLogger().info(PlainTextComponentSerializer.plainText().serialize(outgoing_message));
         }
 
         // send the message to online players
         for (Player p : proxy.getAllPlayers()) {
             boolean cancelled = plugin.getConfig().isRequireReceivePermission() && !player.hasPermission("gchat.receive");
-            GChatMessageSendEvent sendEvent = new GChatMessageSendEvent(player, p, format, playerMessage, cancelled);
+            GChatMessageSendEvent sendEvent = new GChatMessageSendEvent(player, p, format, e.getMessage(), cancelled);
             proxy.getEventManager().fire(sendEvent).join();
 
             if (!sendEvent.getResult().isAllowed()) {
@@ -267,7 +223,7 @@ public class GChatListener {
             if (player.getUniqueId().equals(p.getUniqueId())) {
                 p.sendMessage(player, self_message);
             } else {
-                p.sendMessage(player, message);
+                p.sendMessage(player, outgoing_message);
             }
         }
     }

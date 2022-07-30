@@ -27,6 +27,9 @@ package me.lucko.gchat;
 
 import me.lucko.gchat.api.GChatApi;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Singleton for the {@link GChatApi}.
  */
@@ -43,6 +46,25 @@ public final class GChat {
 
     static void setApi(GChatApi api) {
         GChat.api = api;
+    }
+
+    public static List<String> searchList(String query, List<String> entries) {
+
+        query = query.toLowerCase().trim();
+
+        if (query.isBlank()) {
+            return entries;
+        }
+
+        List<String> result = new ArrayList<>();
+
+        for (String entry : entries) {
+            if (entry.toLowerCase().contains(query)) {
+                result.add(entry);
+            }
+        }
+
+        return result;
     }
 
 }

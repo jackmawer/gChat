@@ -44,6 +44,7 @@ public class ChatFormat {
     private final ClickEvent.Action clickType;
     private final String clickValue;
     private final String type;
+    private final String permission;
 
     public ChatFormat(String id, ConfigurationNode c) {
         this.id = id;
@@ -51,6 +52,7 @@ public class ChatFormat {
         this.checkPermission = c.getNode("check-permission").getBoolean(true);
         this.formatText = getStringNonNull(c, "format");
         this.type = c.getNode("type").getString("chat");
+        this.permission = c.getNode("permission").getString(null);
 
         String currentHoverText = null;
         ClickEvent.Action currentClickType = null;
@@ -84,7 +86,7 @@ public class ChatFormat {
         this.clickValue = currentClickValue;
     }
 
-    public ChatFormat(String id, int priority, boolean checkPermission, String formatText, String hoverText, ClickEvent.Action clickType, String clickValue) {
+    public ChatFormat(String id, int priority, boolean checkPermission, String formatText, String hoverText, ClickEvent.Action clickType, String clickValue, String permission) {
         this.id = id;
         this.priority = priority;
         this.checkPermission = checkPermission;
@@ -92,6 +94,7 @@ public class ChatFormat {
         this.hoverText = hoverText;
         this.clickType = clickType;
         this.clickValue = clickValue;
+        this.permission = permission;
         this.type = "chat";
     }
 
@@ -99,6 +102,14 @@ public class ChatFormat {
 
         if (!checkPermission) {
             return true;
+        }
+
+        if (this.permission != null) {
+            if (player.hasPermission(this.permission)) {
+                return true;
+            } else {
+                return false;
+            }
         }
 
         if (player.hasPermission("gchat.format." + id)) {

@@ -55,6 +55,50 @@ tablist:
 # Defines the formats to be used.
 formats:
 
+  # A me format
+  everyone-me:
+    type: "me"
+    check-permission: false
+    format: "{coloured_display_name} {message}"
+
+  # A whisper format
+  everyone-whisper:
+    type: "whisper"
+    check-permission: false
+    format: "&7[{sender} »» {name}]: &6{message}"
+    format-extra:
+
+      # the format for the message tooltip
+      hover: "A whisper from {name}, AKA {display_name}"
+
+      # what should happen when the message is clicked?
+      click:
+
+        # type: can be either "none", "suggest_command", "run_command" or "open_url"
+        type: "suggest_command"
+
+        # the value to suggest or run.
+        value: "/whisper {name}"
+
+    # An outgoing whisper format
+    everyone-whisper-out:
+      type: "whisper-out"
+      check-permission: false
+      format: "&7[{name} »» {receiver}]: &b{message}"
+      format-extra:
+
+        # the format for the message tooltip
+        hover: "A whisper from you to {receiver}"
+
+        # what should happen when the message is clicked?
+        click:
+
+          # type: can be either "none", "suggest_command", "run_command" or "open_url"
+          type: "suggest_command"
+
+          # the value to suggest or run.
+          value: "/whisper {receiver}"
+
   # A login format
   everyone-login:
     type: "login"

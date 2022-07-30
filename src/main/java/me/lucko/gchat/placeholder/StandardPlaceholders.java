@@ -55,6 +55,9 @@ public class StandardPlaceholders implements Placeholder {
             case "display_name":
                 result = GChatPlayer.get(player).getDisplayName();
                 break;
+            case "coloured_display_name":
+                result = GChatPlayer.get(player).getColouredDisplayName();
+                break;
             case "server_name":
                 ServerConnection connection = player.getCurrentServer().orElse(null);
 
@@ -81,6 +84,26 @@ public class StandardPlaceholders implements Placeholder {
                 break;
             case "now":
                 result = GChatPlayer.get(player).getCurrentTime();
+                break;
+            case "server_load":
+                result = ""+GChatPlayer.get(player).getServerLoad();
+                break;
+            case "server_load_coloured":
+                int load = GChatPlayer.get(player).getServerLoad();
+
+                if (load > 100) {
+                    // Dark red
+                    result = "&4" + load;
+                } else if (load > 85) {
+                    // Red
+                    result = "&c" + load;
+                } else if (load > 65) {
+                    // Gold
+                    result = "&6" + load;
+                } else {
+                    // Dark green
+                    result = "&2" + load;
+                }
                 break;
             case "mspt":
                 result = String.format(MSPT_FORMAT, GChatPlayer.get(player).getMSPT());

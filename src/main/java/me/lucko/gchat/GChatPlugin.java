@@ -42,15 +42,13 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.ServerConnection;
-import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+import com.velocitypowered.api.proxy.server.ServerInfo;
 import me.lucko.gchat.api.ChatFormat;
 import me.lucko.gchat.api.GChatApi;
 import me.lucko.gchat.api.Placeholder;
-import me.lucko.gchat.commands.NicknameCommand;
-import me.lucko.gchat.commands.PronounsCommand;
-import me.lucko.gchat.commands.TimezoneCommand;
+import me.lucko.gchat.commands.*;
 import me.lucko.gchat.config.GChatConfig;
 import me.lucko.gchat.hooks.LuckPermsHook;
 import me.lucko.gchat.hooks.NeutronN3FSHook;
@@ -108,10 +106,12 @@ public class GChatPlugin implements GChatApi {
     private final DateFormat date_format;
     private final DateFormat time_format;
     private final DateFormat tz_time_format;
-    private final Map<RegisteredServer, Float> mspt_map;
-    private final Map<RegisteredServer, Float> tps_map;
+    private final Map<ServerInfo, Integer> load_map;
+    private final Map<ServerInfo, Float> mspt_map;
+    private final Map<ServerInfo, Float> tps_map;
 
     public static final MinecraftChannelIdentifier GCHAT_CHANNEL = MinecraftChannelIdentifier.create("blackblock", "gchat");
+    public static final MinecraftChannelIdentifier SERVER_MOVE_CHANNEL = MinecraftChannelIdentifier.create("blackblock", "servermove");
     public static GChatPlugin instance;
 
     private GChatConfig config;
@@ -128,6 +128,7 @@ public class GChatPlugin implements GChatApi {
 
         this.mspt_map = new HashMap<>();
         this.tps_map = new HashMap<>();
+        this.load_map = new HashMap<>();
 
         GChatPlugin.instance = this;
     }
@@ -172,8 +173,13 @@ public class GChatPlugin implements GChatApi {
         // register the nickname command
         commandManager.register("nickname", new NicknameCommand());
 
+        commandManager.register("msg", new WhisperCommand(), "whisper");
+
+        commandManager.register("me", new MeCommand());
+
         proxy.getEventManager().register(this, new PluginMessageHook(this));
         proxy.getChannelRegistrar().register(GCHAT_CHANNEL);
+        proxy.getChannelRegistrar().register(SERVER_MOVE_CHANNEL);
 
         this.tab_list = new GChatTabList(this, proxy);
         proxy.getEventManager().register(this, this.tab_list);
@@ -357,7 +363,7 @@ public class GChatPlugin implements GChatApi {
         return file;
     }
 
-    ProxyServer getProxy() {
+    public ProxyServer getProxy() {
         return proxy;
     }
 
@@ -376,12 +382,49 @@ public class GChatPlugin implements GChatApi {
     /**
      * Register a server's MSPT and TPS
      */
-    public void registerTicks(ServerConnection server_connection, float mspt, float tps) {
+    public void registerTicks(ServerConnection server_connection, float mspt, float tps, int load) {
 
         RegisteredServer server = server_connection.getServer();
+        ServerInfo server_info = server.getServerInfo();
 
-        this.mspt_map.put(server, mspt);
-        this.tps_map.put(server, tps);
+        System.out.println("Server '" + server_info.getName() + "' TPS: " + ((int) tps) + " MSPT: " + ((int) mspt) + " Load: " + (int) load);
+
+        Float existing_mspt = this.mspt_map.get(server_info);
+
+        if (existing_mspt != null) {
+            mspt = (existing_mspt + mspt) / 2;
+        }
+
+        Float existing_tps = this.tps_map.get(server_info);
+
+        if (existing_tps != null) {
+            tps = (existing_tps + tps) / 2;
+        }
+
+        Integer existing_load = this.load_map.get(server_info);
+
+        if (existing_load != null) {
+            load = (existing_load + load) / 2;
+        }
+
+        //System.out.println(" -- Normalized " + tps + " - " + mspt + " - " + load);
+
+        this.mspt_map.put(server_info, mspt);
+        this.tps_map.put(server_info, tps);
+        this.load_map.put(server_info, load);
+    }
+
+    /**
+     * Get a server's load
+     */
+    public int getServerLoad(ServerConnection server_connection) {
+        RegisteredServer server = server_connection.getServer();
+
+        if (server != null && this.load_map.containsKey(server.getServerInfo())) {
+            return this.load_map.get(server.getServerInfo());
+        }
+
+        return -1;
     }
 
     /**
@@ -391,11 +434,11 @@ public class GChatPlugin implements GChatApi {
 
         RegisteredServer server = server_connection.getServer();
 
-        if (this.mspt_map.containsKey(server)) {
-            return this.mspt_map.get(server);
+        if (server != null && this.mspt_map.containsKey(server.getServerInfo())) {
+            return this.mspt_map.get(server.getServerInfo());
         }
 
-        return 0f;
+        return -1f;
     }
 
     /**
@@ -405,11 +448,11 @@ public class GChatPlugin implements GChatApi {
 
         RegisteredServer server = server_connection.getServer();
 
-        if (this.tps_map.containsKey(server)) {
-            return this.tps_map.get(server);
+        if (server != null && this.tps_map.containsKey(server.getServerInfo())) {
+            return this.tps_map.get(server.getServerInfo());
         }
 
-        return 20f;
+        return -1f;
     }
 
     /**
