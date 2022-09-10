@@ -109,6 +109,7 @@ public class GChatPlugin implements GChatApi {
     private final Map<ServerInfo, Integer> load_map;
     private final Map<ServerInfo, Float> mspt_map;
     private final Map<ServerInfo, Float> tps_map;
+    private final Map<ServerInfo, Integer> counter_map;
 
     public static final MinecraftChannelIdentifier GCHAT_CHANNEL = MinecraftChannelIdentifier.create("blackblock", "gchat");
     public static final MinecraftChannelIdentifier SERVER_MOVE_CHANNEL = MinecraftChannelIdentifier.create("blackblock", "servermove");
@@ -129,6 +130,7 @@ public class GChatPlugin implements GChatApi {
         this.mspt_map = new HashMap<>();
         this.tps_map = new HashMap<>();
         this.load_map = new HashMap<>();
+        this.counter_map = new HashMap<>();
 
         GChatPlugin.instance = this;
     }
@@ -387,7 +389,21 @@ public class GChatPlugin implements GChatApi {
         RegisteredServer server = server_connection.getServer();
         ServerInfo server_info = server.getServerInfo();
 
-        System.out.println("Server '" + server_info.getName() + "' TPS: " + ((int) tps) + " MSPT: " + ((int) mspt) + " Load: " + (int) load);
+        Integer tick_counter = this.counter_map.getOrDefault(server_info, 0);
+
+        if (tick_counter == 0) {
+            System.out.println("Server '" + server_info.getName() + "' TPS: " + ((int) tps) + " MSPT: " + ((int) mspt) + " Load: " + (int) load);
+        }
+
+        tick_counter++;
+
+        // This will make the server TPS only print every +/- 40 seconds
+        // (Depends on how often the server reports its tps)
+        if (tick_counter > 20) {
+            tick_counter = 0;
+        }
+
+        this.counter_map.put(server_info, tick_counter + 1);
 
         Float existing_mspt = this.mspt_map.get(server_info);
 
