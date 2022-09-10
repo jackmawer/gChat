@@ -17,13 +17,19 @@ import java.util.Map;
  */
 public class MeCommand implements SimpleCommand {
 
+    private final String format;
+
+    public MeCommand(String format) {
+        this.format = format;
+    }
+
     @Override
     public void execute(Invocation invocation) {
 
         GChatPlayer player = GChatPlayer.get(invocation.source());
 
         if (player == null) {
-            System.out.println("Unable to do /me, player is null");
+            System.out.println("Unable to do MeCommand of format " + this.format + ", player is null");
             return;
         }
 
@@ -35,7 +41,7 @@ public class MeCommand implements SimpleCommand {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("message", MiniMessage.miniMessage().escapeTags(message));
 
-        TextComponent me_message = player.format("me", parameters);
+        TextComponent me_message = player.format(this.format, parameters);
         player.broadcast(me_message, true);
     }
 }

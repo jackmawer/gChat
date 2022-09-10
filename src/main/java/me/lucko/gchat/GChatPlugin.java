@@ -175,9 +175,10 @@ public class GChatPlugin implements GChatApi {
         // register the nickname command
         commandManager.register("nickname", new NicknameCommand());
 
-        commandManager.register("msg", new WhisperCommand(), "whisper");
+        commandManager.register("msg", new WhisperCommand(), "whisper", "w", "tell");
 
-        commandManager.register("me", new MeCommand());
+        commandManager.register("me", new MeCommand("me"));
+        commandManager.register("say", new MeCommand("say"));
 
         proxy.getEventManager().register(this, new PluginMessageHook(this));
         proxy.getChannelRegistrar().register(GCHAT_CHANNEL);
