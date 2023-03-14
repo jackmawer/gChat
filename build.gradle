@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'uk.co.n3fs.mc'
-version = '3.0.1-SNAPSHOT'
+version = '3.0.2-SNAPSHOT'
 description = 'A simple global chat plugin for Velocity.'
 
 repositories {
@@ -29,7 +29,7 @@ repositories {
     }
 
     maven {
-        url 'https://repo.velocitypowered.com/snapshots/'
+        url 'https://repo.papermc.io/snapshots/'
     }
 
     maven {
@@ -65,6 +65,11 @@ indra {
             description.set('A simple global chat plugin for Velocity.')
             url.set('https://n3fs.co.uk')
             developers {
+                developer {
+                    id.set('its_notjack')
+                    name.set('its_notjack')
+                    email.set('jack.gradle@mawersoft.co.uk')
+                }
                 developer {
                     id.set('mdcfe')
                     name.set('MD')
